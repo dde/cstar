@@ -196,13 +196,16 @@ namespace Cstar
                     {
                         ERROR(150);
                     }
-                    iStack[iStackIndex].fname = FILENAME;
-                    iStack[iStackIndex].inc = INSRC;
-                    INCLUDEFLAG = true;
-                    SAVESYMCNT = SYMCNT;
-                    SAVEXECNT = EXECNT;
-                    SAVELC = LC;
-                    INSYMBOL();
+                    else
+                    {
+                        iStack[iStackIndex].fname = FILENAME;
+                        iStack[iStackIndex].inc = INSRC;
+                        INCLUDEFLAG = true;
+                        SAVESYMCNT = SYMCNT;
+                        SAVEXECNT = EXECNT;
+                        SAVELC = LC;
+                        INSYMBOL();
+                    }
                 }
             } else ERROR(6);
         } else ERROR(6);
