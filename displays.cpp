@@ -13,7 +13,7 @@ namespace Cstar
     const char *arrayName(int);
     const char *opcodes[115] = {"pushstkloc", // 0
                                        "pushstklocri", "",
-                                       "movdspbas", "clrchseq", "unhookprcr",
+                                       "movdspbas", "clrchnoseq", "unhookprcr",
                                        "noop",
                                        "jmpseqon", "pushsys",
                                        "mpiinit",
@@ -53,10 +53,16 @@ namespace Cstar
                                        "intdiv",
                                        "intmod","", "", "",
                                        "outendl", "recvchvar", "recvch[var]", "send",
-                                       "fork", "", "procend",
-                                       "", "recvch[T]", "", "", "forall", "", "",
+                                       "fork", "",
+                                       "procend --fork",
+                                       "procend --child",
+                                       "recvch[T]", "",
+                                       "pushprcr",
+                                       "forall",
+                                       "forgrpT-2gtT-1jmp",
+                                       "incrT-2ltT-1jmp",
                                        "",
-                                       "wakepar", "findprcr",
+                                       "wakepar", "findprctb",
                                        "", "", "initarr", "zeroarr", "dup", "join", "testvar",
                                        "pushrconfmtbl", "",
                                        "noswitchon",
@@ -66,7 +72,9 @@ namespace Cstar
                                        "tststrmstkind",
                                        "", "copymsg", "",
                                        "",
-                                       "lock[T]", "unlock[T]", "", "", "",
+                                       "lock[T]", "unlock[T]", "",
+                                       "ltincr[T-1]jmp",
+                                       "",
                                        "seqoff",
                                        "seqon",
                                        "incr[T]imm",
@@ -156,6 +164,8 @@ namespace Cstar
                          F, X, Y, op, arrayName(Y));
                 break;
             case 24:
+            case 75:
+            case 76:
             case 112:
                 snprintf(ibuf, sizeof ibuf, "%4d: %3d %d,%d %s %d\n", ix,
                          F, X, Y, op, Y);
@@ -163,6 +173,10 @@ namespace Cstar
             case 64:
                 snprintf(ibuf, sizeof ibuf, "%4d: %3d %d,%d %s %s\n", ix,
                          F, X, Y, op, lookupSym(X, Y));
+                break;
+            case 104:
+                snprintf(ibuf, sizeof ibuf, "%4d: %3d %d,%d %s %d%s\n", ix,
+                         F, X, Y, op, X, (Y == 1) ? ",grprep" :"");
                 break;
             case 108:
             case 109:
