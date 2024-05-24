@@ -44,6 +44,7 @@ namespace Cstar
     extern int ITOB(int);
     extern int FIND(InterpLocal *il);
     extern void RELEASE(InterpLocal *il, int BASE, int LENGTH);
+    extern void unreleased(InterpLocal *);
     extern int FINDFRAME(InterpLocal *il, int LENGTH);
     extern void EXECLIB(InterpLocal *il, ExLocal *, PROCPNT CURPR, int ID);
     enum DEBUG {DBGRECV = 1, DBGSEND = 2, DBGRELEASE = 4, DBGPROC = 8, DBGTIME = 16, DBGSQTME = 32,
@@ -67,8 +68,8 @@ namespace Cstar
                 //CURPR* curpr = new CURPR;
                 il->BLINE = GETLNUM(il->CURPR->PC - 1);
                 fprintf(STDOUT, "Line Number%5d  In Function ", il->BLINE);
-                J = B;
-                il->INX = il->S[B + 4];
+                J = il->CURPR->B;
+                il->INX = il->S[il->CURPR->B + 4];
                 while (TAB[il->INX].NAME[0] == '*') {
                     J = il->S[J + 3];
                     il->INX = il->S[J + 4];
@@ -624,9 +625,9 @@ namespace Cstar
                         } else {
                             std::cout << " ";
                         }
-                        for (int i = 1; i < (4 - (il->FIRSTPROC % 5)); i++) {
+                        for (int i = 1; i <= (4 - (il->FIRSTPROC % 5)); i++) {
                             if (il->FIRSTPROC + i < 10 && il->FIRSTPROC + i <= il->LASTPROC) {
-                                std::cout << il->FIRSTPROC + i;
+                                std::cout << std::setw(2) << il->FIRSTPROC + i;
                             } else {
                                 std::cout << "  ";
                             }
@@ -634,7 +635,7 @@ namespace Cstar
                         for (int i = il->FIRSTPROC + 1; i <= il->LASTPROC; i++) {
                             if (i % 5 == 0) {
                                 if (i < 10) {
-                                    std::cout << i << "        ";
+                                    std::cout << std::setw(2) << i << "         ";
                                 } else {
                                     std::cout << i << "       ";
                                 }
@@ -682,7 +683,7 @@ namespace Cstar
                 il->BLINE = GETLNUM(CURPR->PC);
 //                std::cout << std::endl;
 //                std::cout << "Break At " << il->BLINE << std::endl;
-                fprintf(STDOUT, "\nBreak At %d\n", il->BLINE);
+                fprintf(STDOUT, "\nBreak At %d", il->BLINE);
                 el.H1 = CURPR->B;
                 il->INX = il->S[CURPR->B + 4];
                 while (TAB[il->INX].NAME[0] == '*') {
@@ -911,6 +912,10 @@ namespace Cstar
                                 il->ACPTAIL->NEXT = il->PTEMP;
                                 il->ACPTAIL = il->PTEMP;
                                 el.H1 = FINDFRAME(il, il->STKMAIN);
+                                if (debug & DBGPROC)
+                                {
+                                    fprintf(STDOUT, "opc %d findframe %d length %d, response %d\n", el.IR.F, CURPR->PID, il->STKMAIN, el.H1);
+                                }
                                 if (el.H1 > 0) {
                                     proc->T = el.H1 + BTAB[2].VSIZE - 1;
                                     proc->STACKSIZE = el.H1 + il->STKMAIN - 1;
@@ -953,6 +958,10 @@ namespace Cstar
                                 el.J = 1;
                                 while (proc->DISPLAY[el.J] != -1) {
                                     il->S[proc->DISPLAY[el.J] + 5]++;
+                                    if (debug & DBGRELEASE)
+                                    {
+                                        fprintf(STDOUT, "%d ref ct %d ct=%d\n", el.IR.F, CURPR->PID, il->S[proc->DISPLAY[el.J] + 5]);
+                                    }
                                     el.J++;
                                 }
                                 if (debug & DBGPROC)
@@ -1462,13 +1471,15 @@ namespace Cstar
                             if (debug & DBGPROC)
                             {
                                 fprintf(STDOUT, "opc %d terminated pid %d\n", el.IR.F, CURPR->PID);
+                                if (CURPR->PID == 0)
+                                    unreleased(il);
                             }
                             CURPR->STATE = PROCESSDESCRIPTOR::TERMINATED;
                         }
                         break;
                     }
                     case 32: {
-                        if (il->S[il->S[CURPR->B+5]] == 1) {
+                        if (il->S[CURPR->B+5] == 1) {
                             if (debug & DBGRELEASE)
                             {
                                 fprintf(STDOUT, "%d release %d fm=%d ln=%d\n", el.IR.F, CURPR->PID, CURPR->B, il->S[CURPR->B + 6]);
@@ -1476,6 +1487,10 @@ namespace Cstar
                             RELEASE(il, CURPR->B, il->S[CURPR->B+6]);
                         } else {
                             il->S[CURPR->B+5] -= 1;
+                            if (debug & DBGRELEASE)
+                            {
+                                fprintf(STDOUT, "%d ref ct %d ct=%d\n", el.IR.F, CURPR->PID, il->S[CURPR->B + 5]);
+                            }
                         }
                         el.H1 = TAB[il->S[CURPR->B+4]].LEV;
                         CURPR->DISPLAY[el.H1+1] = -1;
@@ -1504,6 +1519,10 @@ namespace Cstar
                         } else {
                             //fprintf(STDOUT, "release adjacent %d\n", il->S[CURPR->B+6]);
                             il->S[CURPR->B+5] = il->S[CURPR->B+5] - 1;
+                            if (debug & DBGRELEASE)
+                            {
+                                fprintf(STDOUT, "%d ref ct %d ct=%d\n", el.IR.F, CURPR->PID, il->S[CURPR->B + 5]);
+                            }
                         }
                         CURPR->T = il->S[CURPR->B+7] + 1;
                         il->S[CURPR->T] = il->S[el.H2];
@@ -2125,6 +2144,10 @@ namespace Cstar
                         el.J = 1;
                         while (proc->DISPLAY[el.J] != -1) {
                             il->S[proc->DISPLAY[el.J] + 5] += 1;
+                            if (debug & DBGRELEASE)
+                            {
+                                fprintf(STDOUT, "%d ref ct %d ct=%d\n", el.IR.F, CURPR->PID, il->S[proc->DISPLAY[el.J] + 5]);
+                            }
                             el.J = el.J + 1;
                         }
                         if (el.IR.Y == 1) {
@@ -2171,16 +2194,23 @@ namespace Cstar
                                     if (il->S[el.J + 5] == 0) {
                                         if (debug & DBGRELEASE)
                                         {
-                                            fprintf(STDOUT, "%d release %d fm=%d ln=%d\n", el.IR.F, CURPR->PID, el.J, il->S[el.J + 6]);
+                                            fprintf(STDOUT, "%d releas1 %d fm=%d ln=%d\n", el.IR.F, CURPR->PID, el.J, il->S[el.J + 6]);
                                         }
                                         RELEASE(il, el.J, il->S[el.J + 6]);
+                                    }
+                                    else
+                                    {
+                                        if (debug & DBGRELEASE)
+                                        {
+                                            fprintf(STDOUT, "%d ref ct %d ct=%d\n", el.IR.F, CURPR->PID, il->S[el.J + 5]);
+                                        }
                                     }
                                 }
                             }
                             if (!MPIMODE) {
                                 if (debug & DBGRELEASE)
                                 {
-                                    fprintf(STDOUT, "%d release %d fm=%d ln=%d\n", el.IR.F, CURPR->PID, CURPR->BASE, WORKSIZE);
+                                    fprintf(STDOUT, "%d releas2 %d fm=%d ln=%d\n", el.IR.F, CURPR->PID, CURPR->BASE, WORKSIZE);
                                 }
                                 RELEASE(il, CURPR->BASE, WORKSIZE);
                             }
@@ -2264,6 +2294,10 @@ namespace Cstar
                         break;
                     }
                     case 75: {
+                        // [T] = group size (GROUPING)
+                        // [T-1] = processes
+                        // [T-2] = initial for index
+                        // [T-3] = index stk loc
                         CURPR->FORINDEX = CURPR->T - 2;
                         if (il->S[CURPR->T] <= 0) {
                             il->PS = InterpLocal::PS::GRPCHK;
@@ -2583,7 +2617,7 @@ namespace Cstar
                         el.H1 = FINDFRAME(il,el.IR.Y);
                         if (debug & DBGSEND)
                         {
-                            fprintf(STDOUT, "send %d pid %d from %d to %d len %d\n",
+                            fprintf(STDOUT, "send findframe %d pid %d from %d to %d len %d\n",
                                     el.IR.F, CURPR->PID, el.H2, el.H1, el.IR.Y);
                         }
                         if (el.H2 <= 0 || el.H2 >= STMAX) {
@@ -2632,7 +2666,7 @@ namespace Cstar
                                 }
                                 if (debug & DBGSEND)
                                 {
-                                    fprintf(STDOUT, "%d release fm=%d ln=%d\n", el.IR.F, el.H2, el.IR.Y);
+                                    fprintf(STDOUT, "%d send release fm=%d ln=%d\n", el.IR.F, el.H2, el.IR.Y);
                                 }
                                 RELEASE(il, el.H2, el.IR.Y);
                             }
@@ -2692,6 +2726,10 @@ namespace Cstar
                             RELEASE(il, CURPR->B, il->S[CURPR->B + 6]);
                         } else {
                             il->S[CURPR->B + 5] = il->S[CURPR->B + 5] - 1;
+                            if (debug & DBGRELEASE)
+                            {
+                                fprintf(STDOUT, "%d fm ref ct %d ct=%d\n", el.IR.F, CURPR->PID, il->S[CURPR->B + 5]);
+                            }
                         }
                         el.H1 = TAB[il->S[CURPR->B + 4]].LEV;
                         CURPR->DISPLAY[el.H1 + 1] = -1;
