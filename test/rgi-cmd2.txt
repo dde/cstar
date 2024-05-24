@@ -1,0 +1,17 @@
+o RankSortParaStat.c
+alarm 1500
+run
+alarm 10000
+c
+alarm off
+trace 1 testval
+display
+c
+write 0 testval
+write 1 testval
+time
+c
+clear trace 318
+display
+c
+exit

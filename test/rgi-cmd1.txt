@@ -1,0 +1,16 @@
+o RankSortParaStat.c
+view 20:30
+profile 0:10 100
+run
+break 34
+run
+c
+status
+c
+status
+c
+status
+clear break 34
+c
+close
+exit

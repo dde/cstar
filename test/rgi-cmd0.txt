@@ -1,0 +1,21 @@
+o ct0.c
+break 24
+r
+status
+trace 1 ix
+trace 2 jx
+trace 3 kx
+display
+c
+c
+c
+c
+c
+c
+c
+c
+clear trace 116
+clear trace 189
+clear trace 262
+c
+e

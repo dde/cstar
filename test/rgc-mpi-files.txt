@@ -1,0 +1,10 @@
+mpi-allreduce.c
+mpi-barrier.c
+mpi-broadcast.c
+mpi-cart-create.c
+mpi-gather-x.c
+mpi-gather.c
+mpi-get-count.c
+mpi-hello.c
+mpi-reduce.c
+mpi-scatter.c
