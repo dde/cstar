@@ -326,10 +326,11 @@ namespace Cstar
             std::cout << std::endl;
             std::cout << "                          C* COMPILER AND" << std::endl;
             std::cout << "                 PARALLEL COMPUTER SIMULATION SYSTEM " << std::endl;
-            std::cout << "                             (VER. 2.2c++)" << std::endl;
-//        std::cout << "                             (VER. 2.1)" << std::endl;
+//            std::cout << "                             (VER. 2.2c++)" << std::endl;
+            std::cout << "                             (VER. 2.1)" << std::endl;
             std::cout << std::endl;
-            std::cout << "     (C) Copyright 2007 by Bruce P. Lester, All Rights Reserved" << std::endl;
+//            std::cout << "     (C) Copyright 2007 by Bruce P. Lester, All Rights Reserved" << std::endl;
+            std::cout << "     (C) Copyright 2006 by Bruce P. Lester, All Rights Reserved" << std::endl;
             std::cout << std::endl;
             std::cout << std::endl;
             std::cout << "  Basic Commands:" << std::endl;
