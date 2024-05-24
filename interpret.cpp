@@ -953,7 +953,7 @@ void showRealList(bool flg)
         }
         if (il->TYP == INTS || il->TYP == REALS || il->TYP == BOOLS || il->TYP == CHARS) {
             for (I = KDES->BASE; I <= KDES->BASE + KDES->FORLEVEL - 1; I++) {
-                if (il->SLOCATION[I] == il->ADR && KDES->PC >= lround(il->RS[I])) {
+                if (il->SLOCATION[I] == il->ADR && KDES->PC >= std::lround(il->RS[I])) {
                     il->ADR = I;
                 }
             }
@@ -976,11 +976,16 @@ void showRealList(bool flg)
 }
     void READLN(FILE *input)
     {
+        int ch;
         // Pascal reads optional values, but reads through any of CRLF, LF, CR, end styles
         // handled in eoln()
 //        size_t reclen = FILMAX + 1;
 //        char *buffer = FNAME;
 //        getline(&buffer, &reclen, input);
+        while(!eoln(input))
+        {
+            ch = fgetc(input);
+        }
     }
     double RANDGEN()
     {
@@ -1438,6 +1443,7 @@ void showRealList(bool flg)
         return I;
     }
 
+    static int rel_alloc = 0, rel_free = 0, rel_fail = 0;
     int FINDFRAME(InterpLocal *il, int LENGTH)
     {
         // a frame is an unused chunk of stack parallels, S, RS, SLOCATION, STARTMEM
@@ -1465,9 +1471,10 @@ void showRealList(bool flg)
                     {
                         // PREV has been set if REF moves beyond STHEAD
                         PREV->NEXT = REF->NEXT;
-                        //free(REF);
+                        free(REF);
+                        ++rel_free;
                     }
-                    free(REF);  // ??
+                    //free(REF);  // ??
                     REF = nullptr;
                 }
             } else
@@ -1490,7 +1497,6 @@ void showRealList(bool flg)
         }
         return rtn;
     }
-
     void RELEASE(InterpLocal *il, int BASE, int LENGTH)
     {
         STYPE *smp = il->STARTMEM;
@@ -1513,7 +1519,10 @@ void showRealList(bool flg)
                 REF = REF->NEXT;
             }
         }
+        if (!LOCATED)
+            ++rel_fail;
         NEWREF = (BLKPNT) malloc(sizeof(BLOCKR));
+        ++rel_alloc;
         NEWREF->START = BASE;
         NEWREF->SIZE = LENGTH;
         NEWREF->NEXT = REF;
@@ -1529,6 +1538,7 @@ void showRealList(bool flg)
             {
                 PREV->SIZE = PREV->SIZE + LENGTH;
                 free(NEWREF);
+                ++rel_free;
                 NEWREF = PREV;
             }
         }
@@ -1538,8 +1548,20 @@ void showRealList(bool flg)
             {
                 NEWREF->SIZE = NEWREF->SIZE + REF->SIZE;
                 NEWREF->NEXT = REF->NEXT;
+                ++rel_free;
                 free(REF);
             }
+        }
+    }
+    void unreleased(InterpLocal *il)
+    {
+        BLKPNT seq;
+        fprintf(STDOUT, "rel_fail %d, rel_alloc %d, rel_free %d\n", rel_fail, rel_alloc, rel_free);
+        seq = il->STHEAD;
+        while (seq != nullptr)
+        {
+            fprintf(STDOUT, "unreleased %d len %d\n", seq->START, seq->SIZE);
+            seq = seq->NEXT;
         }
     }
 
@@ -1641,6 +1663,7 @@ void showRealList(bool flg)
             il->CHAN[I].HEAD = -1;
         }
         il->STHEAD = (BLKPNT) calloc(1, sizeof(BLOCKR));
+        ++rel_alloc;
         il->STKMAIN = BTAB[2].VSIZE + WORKSIZE;  // WORKSIZE=30
         // first STKMAIN elements of S, RS, SLOCATION, STARTMEN, initialized
         for (int I = 0; I <= il->STKMAIN - 1; I++)
@@ -1955,7 +1978,8 @@ void showRealList(bool flg)
                                 K = NUM(il);
                                 il->PTEMP = il->ACPHEAD;
                                 il->TEMP = false;
-                                while (!il->TEMP && il->PTEMP != il->ACPHEAD) {
+                                do
+                                {
                                     if (il->PTEMP->PDES->PID == K) {
                                         il->TEMP = true;
                                         il->STEPROC = il->PTEMP->PDES;
@@ -1963,6 +1987,7 @@ void showRealList(bool flg)
                                         il->PTEMP = il->PTEMP->NEXT;
                                     }
                                 }
+                                while (!il->TEMP && il->PTEMP != il->ACPHEAD);
                                 if (!il->TEMP) {
                                     fprintf(stdout, "Invalid Process Number");
                                     goto L200;
@@ -2012,7 +2037,7 @@ void showRealList(bool flg)
                     goto L200;
                 }
                 J = 0;
-                for (I = 0; I < BRKMAX; I++) {
+                for (I = 1; I <= BRKMAX; I++) {
                     if (il->BRKTAB[I] == -1) {
                         J = I;
                     }
@@ -2057,17 +2082,18 @@ void showRealList(bool flg)
                 }
                 if (SRCOPEN) {
                     //RESET(SRC);
+                    std::fseek(SRC, 0l, SEEK_SET);
                     for (K = 1; K < il->FIRST; K++) {
                         READLN(SRC);
                     }
                     for (K = il->FIRST; K <= il->LAST; K++) {
-                        fprintf(stdout, "%d", K);
+                        fprintf(stdout, "%4d", K);
                         fprintf(stdout, " ");
                         while (!eoln(SRC)) {
                             CH = (char)fgetc(SRC);
                             fputc(CH, stdout);
                         }
-                        READLN(SRC);
+                        //READLN(SRC);
                         fprintf(stdout, "\n");
                     }
                 } else {
@@ -2098,7 +2124,7 @@ void showRealList(bool flg)
                     if (K < 0 || K > LNUM) {
                         fprintf(stdout, "Not Valid Line Number");
                     } else {
-                        for (I = 0; I < BRKMAX; I++) {
+                        for (I = 1; I <= BRKMAX; I++) {
                             if (il->BRKLINE[I] == K) {
                                 il->BRKTAB[I] = -1;
                                 il->BRKLINE[I] = -1;
@@ -2113,7 +2139,7 @@ void showRealList(bool flg)
                     if (K < 0 || K > STMAX - 1) {
                         fprintf(stdout, "Not Valid Memory Location");
                     } else {
-                        for (I = 0; I < VARMAX; I++) {
+                        for (I = 1; I <= VARMAX; I++) {
                             if (il->TRCTAB[I].MEMLOC == K) {
                                 il->TRCTAB[I].MEMLOC = -1;
                                 il->NUMTRACE--;
@@ -2137,9 +2163,9 @@ void showRealList(bool flg)
                 {
                     if (il->NUMBRK > 0)
                     {
-                        for (K = 0; K < BRKMAX - 1; K++)
+                        for (K = 1; K <= BRKMAX - 1; K++)
                         {
-                            for (I = 0; I < BRKMAX - K; I++)
+                            for (I = 1; I <= BRKMAX - K; I++)
                             {
                                 if (il->BRKLINE[I] > il->BRKLINE[I + 1])
                                 {
@@ -2152,56 +2178,56 @@ void showRealList(bool flg)
                                 }
                             }
                         }
-                        fprintf(stdout, "Breakpoints at Following Lines:");
-                        for (I = 0; I < BRKMAX; I++)
+                        fprintf(stdout, "Breakpoints at Following Lines:\n");
+                        for (I = 1; I <= BRKMAX; I++)
                         {
                             if (il->BRKLINE[I] >= 0)
                             {
-                                fprintf(stdout, "%d", il->BRKLINE[I]);
+                                fprintf(stdout, "%d\n", il->BRKLINE[I]);
                             }
                         }
                     }
                     if (il->NUMTRACE > 0)
                     {
                         fprintf(stdout, "\n");
-                        fprintf(stdout, "List of Trace Variables:");
-                        fprintf(stdout, "Variable Name             Memory Location");
-                        for (I = 0; I < VARMAX; I++)
+                        fprintf(stdout, "List of Trace Variables:\n");
+                        fprintf(stdout, "Variable Name             Memory Location\n");
+                        for (I = 1; I <= VARMAX; I++)
                         {
                             if (il->TRCTAB[I].MEMLOC != -1)
                             {
-                                fprintf(stdout, "   %s %d", il->TRCTAB[I].NAME, il->TRCTAB[I].MEMLOC);
+                                fprintf(stdout, "   %s%11d\n", il->TRCTAB[I].NAME, il->TRCTAB[I].MEMLOC);
                             }
                         }
                     }
                     if (il->ALARMON)
                     {
                         fprintf(stdout, "\n");
-                        fprintf(stdout, "Alarm is Set at Time %f", il->ALARMTIME);
+                        fprintf(stdout, "Alarm is Set at Time %f\n", il->ALARMTIME);
                     }
                     if (TOPOLOGY != SHAREDSY)
                     {
                         fprintf(stdout, "\n");
-                        fprintf(stdout, "Communication Link Delay: %d", il->TOPDELAY);
+                        fprintf(stdout, "Communication Link Delay: %d\n", il->TOPDELAY);
                         if (il->CONGESTION)
                         {
-                            fprintf(stdout, "Congestion is On");
+                            fprintf(stdout, "Congestion is On\n");
                         } else
                         {
-                            fprintf(stdout, "Congestion is Off");
+                            fprintf(stdout, "Congestion is Off\n");
                         }
                     }
                     if (MPIMODE)
                     {
-                        fprintf(stdout, "MPI Mode is On");
+                        fprintf(stdout, "MPI Mode is On\n");
                     }
                     if (strlen(il->INPUTFNAME) != 0)
                     {
-                        fprintf(stdout, "File for Program Data Input: %s", il->INPUTFNAME);
+                        fprintf(stdout, "File for Program Data Input: %s\n", il->INPUTFNAME);
                     }
                     if (strlen(il->OUTPUTFNAME) != 0)
                     {
-                        fprintf(stdout, "File for Program Data Output: %s", il->OUTPUTFNAME);
+                        fprintf(stdout, "File for Program Data Output: %s\n", il->OUTPUTFNAME);
                     }
                     fprintf(stdout, "Listing File for your Source Program: ");
                     if (LISTDEF)
@@ -2336,7 +2362,7 @@ void showRealList(bool flg)
                     goto L200;
                 }
                 J = 0;
-                for (I = 0; I < VARMAX; I++)
+                for (I = 1; I <= VARMAX; I++)
                 {
                     if (il->TRCTAB[I].MEMLOC == -1)
                     {
@@ -2348,7 +2374,7 @@ void showRealList(bool flg)
                     fprintf(stdout, "Too Many Trace Variables");
                     goto L200;
                 }
-                strcpy(il->TRCTAB[J].NAME, il->VARNAME);
+                strcpy(il->TRCTAB[J].NAME, &il->VARNAME[1]);
                 il->TRCTAB[J].MEMLOC = il->ADR;
                 il->NUMTRACE++;
                 fprintf(stdout, "\n");
@@ -2505,10 +2531,10 @@ void showRealList(bool flg)
                             }
                             if (il->PTEMP->PDES->PID == il->CURPR->PID)
                             {
-                                std::cout << GETLNUM(il->PTEMP->PDES->PC) << std::setw(7);
+                                std::cout << std::setw(7) << GETLNUM(il->PTEMP->PDES->PC);
                             } else
                             {
-                                std::cout << GETLNUM(il->PTEMP->PDES->PC - 1) << std::setw(7);
+                                std::cout << std::setw(7) << GETLNUM(il->PTEMP->PDES->PC - 1);
                             }
                             std::cout << "      ";
                             switch (il->PTEMP->PDES->STATE)
@@ -2531,7 +2557,7 @@ void showRealList(bool flg)
                                 default:
                                     break;
                             }
-                            std::cout << il->PTEMP->PDES->PROCESSOR << std::endl;
+                            std::cout << std::setw(6) << il->PTEMP->PDES->PROCESSOR << std::endl;
                         }
                         il->PTEMP = il->PTEMP->NEXT;
                     } while (il->PTEMP != il->ACPHEAD);
@@ -2554,8 +2580,9 @@ void showRealList(bool flg)
                     if (il->CLOCK > 0)
                     {
                         il->SPEED = il->SEQTIME / il->CLOCK;
-                        std::cout << "     Speedup:  " << il->SPEED << std::endl;
-                        std::cout << std::endl;
+//                        std::cout << "     Speedup:  " << il->SPEED << std::endl;
+//                        std::cout << std::endl;
+                        fprintf(STDOUT, "     Speedup:  %6.2f\n\n", il->SPEED);
                     }
                     if (il->OLDTIME != 0)
                     {
@@ -2566,7 +2593,8 @@ void showRealList(bool flg)
                         if (il->R1 > 0)
                         {
                             il->SPEED = il->R2 / il->R1;
-                            std::cout << "     Speedup:  " << il->SPEED << std::endl;
+//                            std::cout << "     Speedup:  " << il->SPEED << std::endl;
+                            fprintf(STDOUT, "     Speedup:  %6.2f\n", il->SPEED);
                         }
                     }
                 }
@@ -2596,7 +2624,8 @@ void showRealList(bool flg)
                     {
                         if (il->PROCTAB[I].STATUS != InterpLocal::PROCTAB::STATUS::NEVERUSED || il->LAST < PMAX)
                         {
-                            std::cout << I << "    " << std::floor(il->PROCTAB[I].VIRTIME / il->CLOCK * 100) << "     ";
+                            std::cout << std::setw(6) << I << "    " <<
+                            std::setw(9) << std::floor(il->PROCTAB[I].VIRTIME / il->CLOCK * 100) << "     ";
                             if (il->R1 > 0)
                             {
                                 il->H1 = std::floor(il->PROCTAB[I].BRKTIME / il->R1 * 100);
@@ -2608,7 +2637,7 @@ void showRealList(bool flg)
                             {
                                 il->H1 = 100;
                             }
-                            std::cout << il->H1 << std::endl;
+                            std::cout << std::setw(12) << il->H1 << std::endl;
                         }
                     }
                 }
