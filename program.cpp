@@ -368,12 +368,13 @@ static const char cfile[] = {'.', 'C', 's', 't', 'a', 'r', '.', 'c', 'm', 'd', '
 static bool mpi = false;
 static void usage(const char *pgm)
 {
-    printf("usage: %s [-i] [-h] [-l] [-m] [-Xabcrst] [file]", pgm);
+    printf("usage: %s [-i] [-h] [-l] [-m] [-Xabcrst] [file]\n", pgm);
     printf("     no operands implies -i\n");
-    printf("  i  interactive - if file specified, it will be opened\n");
+    printf("  i  interactive - if file is specified, it will be OPEN'ed\n");
     printf("  h  display this help and exit\n");
     printf("  l  display listing on the console\n");
     printf("  m  set MPI ON\n");
+    printf("  file  compile and execute a C* file (no -i switch)\n");
     printf("  X  execution options, combined in any order after X (no spaces)\n");
     printf("     a  display the array table\n");
     printf("     b  display the block table\n");
