@@ -25,7 +25,7 @@ The output containing the program name is from the C++ version and the other lin
 should be no other differences.
 
 - `rgc.sh` - an opcode comparison regression script; using the undocumented CODE interactive command, the interpreter
-opcodes are listed for a compiled program, then compared using `diff`.  The output is essentially the dsame as for 
+opcodes are listed for a compiled program, then compared using `diff`.  The output is essentially the same as for 
 `rgr.sh` script, one line of difference for each test program.  There is one exception, owing to a bug in the
 Pascal version which generates an opcode 38 with uninitialized operands.  The operands are unused, so this is not a
 fatal problem.  The output is written to the file `opcodes-cp.txt` and `opcodes-ps.txt`.
@@ -39,5 +39,5 @@ is a number.
 The scripts are all controlled by files.  `rgr.sh` reads the file `rgr-files.txt` which contains the names of
 all the `.c` files used in the regression testing.  There are actually three slightly different control files.  In
 addition to `rgr-files.txt`, there is `rgr-dat-files.txt` containing `.c` file names that read external
-data files, and `rgr-mpi-files.txt` which are `.c` file names needing the MPI execution mode. The actual data
-file names are derived from the program names, such as `pgm.c-input.txt`.
+data files.  The data file names are derived from the program names, such as `pgm.c-input.txt`.  The third
+c ontrol file is `rgr-mpi-files.txt` which contains `.c` program file names needing the MPI execution mode.
