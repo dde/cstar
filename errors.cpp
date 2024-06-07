@@ -10,6 +10,7 @@
 #include "cs_errors.h"
 namespace Cstar
 {
+    extern bool inCLUDEFLAG();
     extern std::FILE *LIS;
     std::string MSG[] = {
     "Undefined Identifier     ",
@@ -292,7 +293,7 @@ namespace Cstar
     void ERROR(int N)
     {
         int I;
-        if (INCLUDEFLAG)
+        if (inCLUDEFLAG())
         {
             if (ERRORCOUNT == 0)
             {

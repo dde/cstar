@@ -15,6 +15,7 @@ namespace Cstar
     {
         SYMBOL MYSY;
     } OptionsLocal;
+    extern bool inCLUDEFLAG();
     extern TYPES RESULTTYPE(TYPES A, TYPES B);
     extern TYPES SUMRESULTTYPE(TYPES A, TYPES B);
     extern bool COMPATIBLE(ITEM X, ITEM Y);
@@ -1327,7 +1328,7 @@ namespace Cstar
         }
         BTAB[bl.PRB].VSIZE = bl.DX;
         BTAB[bl.PRB].VSIZE = BTAB[bl.PRB].VSIZE + bl.MAXNUMWITH;
-        if ((SYMCNT == 1) && (!INCLUDEFLAG))
+        if ((SYMCNT == 1) && (!inCLUDEFLAG()))
             LOCATION[LNUM] = LC;
     }
 

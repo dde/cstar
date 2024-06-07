@@ -36,6 +36,10 @@ namespace Cstar
     static const int maxiStack = 10;
     static struct IncludeStack iStack[maxiStack];
     static int iStackIndex = -1;
+    bool inCLUDEFLAG()
+    {
+        return iStackIndex >= 0;
+    }
     static int lookAhead = -2;
     static bool console_list = false;
     static bool code_list = false;
@@ -167,10 +171,12 @@ namespace Cstar
         {
             FILENAME = "";
             LENG = 0;
-            while (((CH >= 'a' && CH <= 'z') || (CH >= 'A' && CH <= 'Z') || (CH >= '0' && CH <= '9') ||
-                    (CH == '\\' || CH == '.' || CH == '_' || CH == ':')) && (LENG <= FILMAX))
+            //while (((CH >= 'a' && CH <= 'z') || (CH >= 'A' && CH <= 'Z') || (CH >= '0' && CH <= '9') ||
+            //        (CH == '\\' || CH == '.' || CH == '_' || CH == ':')) && (LENG <= FILMAX))
+            while ((std::isalnum(CH) || CH == '/' ||
+                    CH == '\\' || CH == '.' || CH == '_' || CH == ':') && (LENG <= FILMAX))
             {
-                if (CH >= 'a' && CH <= 'z') CH = CH - 32;
+                // if (CH >= 'a' && CH <= 'z') CH = CH - 32;  // DE
                 FILENAME += CH;
                 LENG = LENG + 1;
                 NEXTCH();
@@ -201,9 +207,12 @@ namespace Cstar
                         iStack[iStackIndex].fname = FILENAME;
                         iStack[iStackIndex].inc = INSRC;
                         INCLUDEFLAG = true;
-                        SAVESYMCNT = SYMCNT;
-                        SAVEXECNT = EXECNT;
-                        SAVELC = LC;
+                        if (iStackIndex == 0)
+                        {
+                            SAVESYMCNT = SYMCNT;
+                            SAVEXECNT = EXECNT;
+                            //SAVELC = LC;  // DE
+                        }
                         INSYMBOL();
                     }
                 }
@@ -290,48 +299,39 @@ namespace Cstar
                 {
                     INCLUDEFLAG = false;
                     INSRC = nullptr;
+                    EXECNT = SAVEXECNT;
+                    SYMCNT = SAVESYMCNT;
+                    // LC = SAVELC;  // DE
+                    MAINNEXTCH();
+                    return;
                 }
-                else
-                {
-                    INSRC = iStack[iStackIndex].inc;
-                    FILENAME = iStack[iStackIndex].fname;
-                }
-            } else
-            {
-                LL2 = 0;
-                CC2 = 0;
-                while (!eoln(INSRC))
-                {
-                    LL2++;
-                    // CH = (*INSRC).get();
-                    CH = (int)fgetc(INSRC);
-                    if (CH == '\x09')
-                    {
-                        CH = ' ';
-                    }
-                    LINE2[LL2] = CH;
-                }
-                LL2++;
-                //(*INSRC).ignore();
-                LINE2[LL2] = ' ';
+                INSRC = iStack[iStackIndex].inc;
+                FILENAME = iStack[iStackIndex].fname;
             }
+            LL2 = 0;
+            CC2 = 0;
+            while (!eoln(INSRC))
+            {
+                LL2++;
+                // CH = (*INSRC).get();
+                CH = (int) fgetc(INSRC);
+                if (CH == '\x09')
+                {
+                    CH = ' ';
+                }
+                LINE2[LL2] = CH;
+            }
+            LL2++;
+            //(*INSRC).ignore();
+            LINE2[LL2] = ' ';
         }
-        if (INCLUDEFLAG)
-        {
-            CC2++;
-            CH = LINE2[CC2];
-        } else
-        {
-            EXECNT = SAVEXECNT;
-            SYMCNT = SAVESYMCNT;
-            LC = SAVELC;
-            MAINNEXTCH();
-        }
+        CC2++;
+        CH = LINE2[CC2];
     }
 
     void NEXTCH()
     {
-        if (INCLUDEFLAG)
+        if (inCLUDEFLAG())
         {
             ALTNEXTCH();
         } else

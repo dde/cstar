@@ -25,6 +25,7 @@ namespace Cstar
         BlockLocal *bl;
     };
     void TEST(SYMSET &, SYMSET &, int);
+    extern bool inCLUDEFLAG();
     extern void C_PNTCHANTYP(BlockLocal *, TYPES &, long &, long &);
     extern void BASICEXPRESSION(BlockLocal *, SYMSET, ITEM &);
     void ENTERCHANNEL();
@@ -1264,10 +1265,16 @@ void FUNCDECLARATION(BlockLocal *bl, TYPES TP, long RF, long SZ) {
     su[RSETBRACK] = true;
     BLOCK(bl->blkil,  su, ISFUN, bl->LEVEL + 1, T0);
     EMIT(32 + ISFUN);
-    CODE[LCSAV].Y = LC;
+    if (LC - LCSAV == 2)
+    {
+        LC = LCSAV;  // no need to generate code for a prototype declaration DE
+        EXECNT = 0;  // no executable content , avoids 6 (noop) for breaks
+    }
+    else
+        CODE[LCSAV].Y = LC;
     OKBREAK = false;
 
-    if (INCLUDEFLAG && (TAB[T0].ADR == 0)) {
+    if (inCLUDEFLAG() && (TAB[T0].ADR == 0)) {
         TAB[T0].ADR = -GETFUNCID(TAB[T0].NAME);
     }
 
@@ -1470,10 +1477,16 @@ void PROCDECLARATION(BlockLocal *bl) {
     su[RSETBRACK] = true;
     BLOCK(bl->blkil, su, ISFUN, bl->LEVEL + 1, T0);
     EMIT(32 + ISFUN);
-    CODE[LCSAV].Y = LC;
+    if (LC - LCSAV == 2)
+    {
+        LC = LCSAV;  // no need to generate code for a prototype declaration DE
+        EXECNT = 0;  // no executable content , avoids 6 (noop) for breaks
+    }
+    else
+        CODE[LCSAV].Y = LC;
     OKBREAK = false;
 
-    if (INCLUDEFLAG && (TAB[T0].ADR == 0)) {
+    if (inCLUDEFLAG() && (TAB[T0].ADR == 0)) {
         TAB[T0].ADR = -GETFUNCID(TAB[T0].NAME);
     }
 
@@ -1645,7 +1658,7 @@ void VARIABLEDECLARATION(BlockLocal *bl) {
                             {
                                 EMIT(38);
                             }
-                            // EMIT(111);  // added in V2.2
+                            EMIT(111);  // added in V2.2
                         }
                     }
                 }
