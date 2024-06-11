@@ -1,8 +1,10 @@
 //
 // Created by Dan Evans on 1/29/24.
 //
+#include <iomanip>
 #include <cmath>
 #include <cerrno>
+#include <cstring>
 #include "cs_global.h"
 #include "cs_compile.h"
 #include "cs_interpret.h"
@@ -213,7 +215,7 @@ namespace Cstar
 
         struct CommdelayLocal cl;
         int rtn;
-        std::memset(&cl, 0, sizeof(cl));
+        memset(&cl, 0, sizeof(cl));
         cl.il = il;
         cl.NUMPACK = LEN / 3;
         if (LEN % 3 != 0) {
