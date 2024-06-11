@@ -1,5 +1,6 @@
 import sys
-import subprocess
+import os
+from subprocess import Popen, PIPE, run
 
 
 def usage(_pgm,  _onam, _typs):
@@ -9,6 +10,21 @@ def usage(_pgm,  _onam, _typs):
     print("    output in " + _onam + "-" + _typs[0] + "-version.txt and " +
           _onam + "-" + _typs[1] + "-version.txt")
     exit(1)
+
+
+def run_pgm(_pgm: str, _cmds: [str], _sout: str):
+    _sofd = open(_sout, "a", encoding='utf8')
+    _cmd_str = '\n'.join(_cmds)
+    _po = Popen(_pgm, text=True, stdin=PIPE, stdout=_sofd)
+    if _po.returncode is not None:
+        raise Exception('Popen ' + _pgm + ' failed with ' + str(_po.returncode))
+    _po.communicate(input=_cmd_str)
+    if _po.returncode != 0:
+        raise Exception('communicate failed with ' + str(_po.returncode))
+    _po.wait()
+    if _po.returncode != 0:
+        raise Exception('wait failed with ' + str(_po.returncode))
+    _sofd.close()
 
 
 typs = ("cp", "ps")
@@ -34,32 +50,46 @@ while idx < len(sys.argv):
 rgcf = "rgc-files.txt"
 rgcmf = "rgc-mpi-files.txt"
 rdiff = onam + '-diff.txt'
-pgm1 = '../cmake-build-debug/cstar'
-pgm2 = '~/Pace/courses/spring2024/cs610/parallel/cstar'
+which = 'release'
+if os.name == 'nt':
+    pgm1 = '/Users/Dan/ClionProjects/cstar/cmake-build-' + which + '/cstar.exe'
+    pgm2 = '/Users/Dan/Dropbox/parallel/cstar.exe'
+elif os.name == 'posix':
+    pgm1 = '/Users/danevans/ClionProjects/cstar/cmake-build-' + which + '/cstar'
+    pgm2 = '/Users/danevans/Library/CloudStorage/Dropbox/parallel/cstar'
+else:
+    print('unknown OS')
+    exit(1)
 exes = (pgm1, pgm2)
-lines: [str] = []
+lines: [int] = []
 rd = open(rgcf, 'r')
 rgcf_files = rd.readlines()
 rd.close()
 for ix, fil in enumerate(rgcf_files):
-    cp = subprocess.run('wc -l <' + fil[:-1], shell=True, text=True, capture_output=True)
-    if cp.returncode == 0:
-        lines.append(int(cp.stdout))
-    else:
-        print('wc returned ' + str(cp.returncode))
+    try:
+        rd = open(fil[:-1], 'r', encoding='utf8')
+        pgm_file = rd.readlines()
+        lines.append(len(pgm_file))
+        rd.close()
+    except OSError as ex:
+        print(str(ex))
+        continue
 # print(' '.join(map(str, lines)))
-cp = subprocess.run("truncate -s 0 " + outcp + " " + outps, shell=True, text=True)
-if cp.returncode != 0:
-    print('truncate failed with ' + str(cp.returncode))
+wd = open(outcp, 'w')
+wd.close()
+wd = open(outps, 'w')
+wd.close()
 for ix, fil in enumerate(rgcf_files):
-    cmds = '\n'.join(['', 'o ' + fil[:-1], 'code 1:' + str(lines[ix]), 'close', 'exit', 'EOF', ''])
-    cmd_str = exes[0] + ' >>' + outcp + ' <<EOF' + cmds
-    cp = subprocess.run(cmd_str, shell=True, text=True)
-    if cp.returncode != 0:
-        print(cmd_str + ' failed with ' + str(cp.returncode))
-    cmd_str = exes[1] + ' >>' + outps + ' <<EOF' + cmds
-    cp = subprocess.run(cmd_str, shell=True, text=True)
-    if cp.returncode != 0:
-        print(cmd_str + ' failed with ' + str(cp.returncode))
-cmd_str = 'diff ' + outcp + ' ' + outps + ' >' + rdiff
-cp = subprocess.run(cmd_str, shell=True, text=True)
+    cmd_str = ['o ' + fil[:-1], 'code 1:' + str(lines[ix]), 'close', 'exit', 'EOF', '']
+    try:
+        run_pgm(exes[0], cmd_str, outcp)
+        run_pgm(exes[1], cmd_str, outps)
+    except Exception as ex:
+        print(str(ex))
+if os.name == 'nt':
+    cmd_str = 'fc /L /N ' + outcp + ' ' + outps + ' >' + rdiff
+    cp = run(cmd_str, shell=True, text=True)
+else:
+    cmd_str = 'diff ' + outcp + ' ' + outps + ' >' + rdiff
+    cp = run(cmd_str, shell=True, text=True)
+print('opcode regression complete')
