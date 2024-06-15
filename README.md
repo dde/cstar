@@ -1,9 +1,10 @@
 ## Cstar (C*) C++ Conversion by Daniel Evans, PhD
 
-The files contained in this directory are the C++ version of Cstar, an original program by Dr. Bruce P. Lester,
+The files contained in this directory are the C++ version of Cstar, an original Pascal program by Dr. Bruce P. Lester,
 implementing his language, C*, and the Parallel Computing Simulation System (PCSS) described in his book, ***The Art of
 Parallel Programming***, 1stWorld Publishing, Fairfield, Iowa 52556, Library of Congress Control Number: 2006902678,
 Hardcover ISBN: 1595408398, Second Printing, 2013.
+(C) Copyright 2006, 2013 Bruce P. Lester
 
 Cstar was converted in order to have a source version in an industry-standard language available on many platforms,
 to support the language providing fixes and enhancements for the Pace University Seidenberg School of Computer
