@@ -542,7 +542,7 @@ int main(int argc, const char *argv[])
 #ifdef MAC
         __stdinp = stdin_save;
 #else
-        stdin = stdin_save;
+        // stdin = stdin_save;
 #endif
     delete Cstar::prebuf;
     return return_code;
