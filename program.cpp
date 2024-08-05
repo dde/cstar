@@ -481,7 +481,7 @@ int main(int argc, const char *argv[])
         // close it because the interpreter will open it again
         from = fopen(from_file, "r");
         if (!from)
-            cs_error("cannot open input file", 1, argv[1]);
+            cs_error("cannot open input file", 1, from_file);
         fclose(from);
     }
     if (Cstar::interactive)
@@ -542,7 +542,7 @@ int main(int argc, const char *argv[])
 #ifdef MAC
         __stdinp = stdin_save;
 #else
-        stdin = stdin_save;
+        // stdin = stdin_save;
 #endif
     delete Cstar::prebuf;
     return return_code;
