@@ -3129,7 +3129,7 @@ void showRealList(bool flg)
             {
                 std::cout << std::endl;
                 std::cout << "  C* COMPILER AND PARALLEL COMPUTER SIMULATION SYSTEM" << std::endl;
-                std::cout << "                      VERSION 2.2" << std::endl;
+                std::cout << "                      VERSION 2.2c++" << std::endl;
                 std::cout << std::endl;
                 std::cout << "The C* programming language was created from the C programming" << std::endl;
                 std::cout << "language by adding a few basic parallel programming primitives." << std::endl;
@@ -3143,8 +3143,8 @@ void showRealList(bool flg)
                 std::cout << "      bitwise complement, bitwise and, bitwise or" << std::endl;
                 std::cout << "4. Conditional Operator (?)" << std::endl;
                 std::cout << "      Example:  i >= 0 ? i : 0" << std::endl;
-                std::cout << "5. Compound Assignment Operators:" << std::endl;
-                std::cout << "      +=  -=  *=  /=  %=" << std::endl;
+//                std::cout << "5. Compound Assignment Operators:" << std::endl;
+//                std::cout << "      +=  -=  *=  /=  %=" << std::endl;
                 std::cout << std::endl;
                 std::cout << std::endl;
                 break;
