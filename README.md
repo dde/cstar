@@ -22,11 +22,7 @@ Cstar was converted in order to have a source version in an industry-standard la
 to support the language providing fixes and enhancements for the Pace University Seidenberg School of Computer
 Science and Information Systems course CS610 Introduction to Parallel Computing.
 
-## Original Source
-
-The original Pascal source code for PCCS is contained in the two files `Cstar-2.1-orig.txt` and `Cstar-2.2-orig.txt`.
-Version 2.1 corresponds to the Mac executable, and version 2.2 corresponds to the Windows executable in the original
-distribution zip file.
+## Original Distribution
 
 The original Cstar distribution, `parallel.zip`, contains the files:
 
@@ -55,6 +51,8 @@ The original Cstar distribution, `parallel.zip`, contains the files:
         parallel/SumFloatInput.c
         parallel/SumFloatRandom.c
 
+The C++ distributions are identical except that there is only one executable named "cstar+" (Mac) or "cstar+.exe" (Windows).  There is no "Shortcut".
+
 ## Building
 
 The build meta-file is `CMakeLists.txt`.  This file is used by the program Cmake to
@@ -78,7 +76,7 @@ also fork it on Github.)
 This will create a directory `cstar` in the current directory on your local system.  Change to the cstar directory
 (`cd cstar`), then issue the command:
 
-`git checkout version-2.2`
+`git checkout main`
 
 This will bring all the project files into the current directory
 
