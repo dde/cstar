@@ -485,11 +485,11 @@ namespace Cstar
 //                    fprintf(STDOUT, "switch ptab runproc\n");
                 }
                 else {
-                    if (COUNT > PMAX && !DEADLOCK)
-                    {
-                        fprintf(STDOUT, "loop in SLICE\n");
-                        DEADLOCK = true;
-                    }
+//                    if (COUNT > PMAX && !DEADLOCK)
+//                    {
+//                        fprintf(STDOUT, "loop in SLICE\n");
+//                        DEADLOCK = true;
+//                    }
                     proc->TIME = il->CLOCK;
                     if (debug & DBGTIME)
                         procTime(proc, 0.0, "SLICE3-CLOCK");
