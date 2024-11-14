@@ -1150,7 +1150,8 @@ void PARAMETERLIST(BlockLocal *bl) {
         //            ELSE NORMAL := TRUE;
         //          IF TP = PNTS THEN PNTPARAM := TRUE ELSE PNTPARAM := FALSE;
         if (TP == ARRAYS && VALUEFOUND)
-            if (ATAB[RF].HIGH == 0)
+//            if (ATAB[RF].HIGH == 0)
+            if (ATAB[RF].SIZE == 0)
                 ERROR(117);
         if ((TP == ARRAYS && !VALUEFOUND) || TP == CHANS)
             TAB[Tx].NORMAL = false;
