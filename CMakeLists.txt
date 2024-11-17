@@ -19,8 +19,19 @@ set(SOURCE_FILES lexer.cpp
         exec.cpp
         execlib.cpp
         displays.cpp)
+set(COMPILE_FILES compile.cpp
+        block.cpp
+        displayc.cpp
+        lexer.cpp
+        errors.cpp
+        statement.cpp
+        expression.cpp
+        initcompiler.cpp)
+set(COMPILE_HDRS cs_compile.h)
 
 add_executable(cstar ${SOURCE_FILES} ${HEADERS})
+
+add_executable(cstc ${COMPILE_FILES} ${COMPILE_HDRS})
 
 #add_executable(cstar main.cpp)
 #        commdelay.cpp
