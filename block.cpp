@@ -1192,16 +1192,14 @@ namespace Cstar
         if (TAB[I].LEV < bl->LEVEL && TAB[I].ADR >= 0)
             EMIT2(3, TAB[I].LEV, bl->LEVEL);
     }
-    void BLOCK(InterpLocal *il, SYMSET FSYS, bool ISFUN, int LEVEL, int PRT)
+    void BLOCK(SYMSET FSYS, bool ISFUN, int LEVEL, int PRT)
     {
-        //fprintf(stdout, "BLOCK not yet implemented");
 //    int DX;
 //    int FLEVEL;   shadows global
 //    int NUMWITH;
 //    int MAXNUMWITH;
 //    bool UNDEFMSGFLAG;
         BlockLocal bl;
-        bl.blkil = il;
         bl.FSYS = FSYS;
         bl.ISFUN = ISFUN;
         bl.LEVEL = LEVEL;
@@ -1210,7 +1208,7 @@ namespace Cstar
         SYMSET su, sv;
         bl.DX = BASESIZE;
         bl.FLEVEL = 0;
-        if (il->LEVEL > LMAX)
+        if (bl.LEVEL > LMAX)
             FATAL(5);
         if (bl.LEVEL > 2)
             ERROR(122);

@@ -24,7 +24,6 @@ namespace Cstar
         bool CREATEFLAG;
         bool ISDECLARATION;
         bool UNDEFMSGFLAG;
-        InterpLocal *blkil;
     } BlockLocal;
 }
 #endif //CSTAR_CS_BLOCK_H

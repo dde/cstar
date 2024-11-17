@@ -34,7 +34,7 @@ extern void showConsoleList(bool flg);
 extern void EXECUTE(InterpLocal *il);
 extern void ENTERBLOCK();
 extern bool INCLUDEDIRECTIVE();
-extern void BLOCK(InterpLocal *, SYMSET, bool, int, int);
+extern void BLOCK(SYMSET, bool, int, int);
 extern void NEXTCHAR();
 extern void WRMPIBUF(InterpLocal *, int PNUM);
 void QUALIFY(InterpLocal *);
@@ -2884,7 +2884,7 @@ void showRealList(bool flg)
                 INITCOMPILER();
                 strcpy(PROGNAME, "PROGRAM       ");
                 MAINFUNC = -1;
-                BLOCK(il, DECLBEGSYS, false, 1, Tx);
+                BLOCK(DECLBEGSYS, false, 1, Tx);
                 if (SY != EOFSY)
                     ERROR(22);
                 if (BTAB[2].VSIZE + WORKSIZE > STMAX)

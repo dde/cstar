@@ -38,7 +38,7 @@ namespace Cstar
     extern void ENTER(BlockLocal *bl, ALFA, OBJECTS);
     int LOC(BlockLocal *, ALFA);
     bool TYPE_COMPATIBLE(ITEM, ITEM);
-    extern void BLOCK(InterpLocal *il, SYMSET fsys, bool ISFUN, int LEVEL, int PRT);
+    extern void BLOCK(SYMSET fsys, bool ISFUN, int LEVEL, int PRT);
     void SKIP(SYMSET, int);
     void TESTSEMICOLON(BlockLocal *);
     extern int MAINFUNC;
@@ -1264,7 +1264,7 @@ void FUNCDECLARATION(BlockLocal *bl, TYPES TP, long RF, long SZ) {
     EMIT(10);
     su = bl->FSYS | STATBEGSYS | ASSIGNBEGSYS | DECLBEGSYS;
     su[RSETBRACK] = true;
-    BLOCK(bl->blkil,  su, ISFUN, bl->LEVEL + 1, T0);
+    BLOCK( su, ISFUN, bl->LEVEL + 1, T0);
     EMIT(32 + ISFUN);
     if (LC - LCSAV == 2)
     {
@@ -1476,7 +1476,7 @@ void PROCDECLARATION(BlockLocal *bl) {
     EMIT(10);
     su = bl->FSYS | STATBEGSYS | ASSIGNBEGSYS | DECLBEGSYS;
     su[RSETBRACK] = true;
-    BLOCK(bl->blkil, su, ISFUN, bl->LEVEL + 1, T0);
+    BLOCK(su, ISFUN, bl->LEVEL + 1, T0);
     EMIT(32 + ISFUN);
     if (LC - LCSAV == 2)
     {
