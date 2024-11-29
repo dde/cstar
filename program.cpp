@@ -443,6 +443,7 @@ int main(int argc, const char *argv[])
 {
     FILE *from = nullptr, *to = nullptr, *cmds = nullptr;
     const char *from_file = nullptr;
+    const char *mpi_cmd = "MPI ON\n";
     char *tbuf;
     int ix, jx;
     const int PREOVHD = 25;  // overhead for longest prebuf command sequences
@@ -469,6 +470,8 @@ int main(int argc, const char *argv[])
         else
             usage(argv[0]);
     }
+    if (from_file == nullptr)
+        Cstar::interactive = true;
 #ifdef MAC
     Cstar::STDIN = __stdinp;
 #else
@@ -493,11 +496,16 @@ int main(int argc, const char *argv[])
             ix = (int)std::strlen(from_file) + PREOVHD;
             tbuf = (char *)malloc(ix);
             jx = std::snprintf(tbuf, ix, "%sOPEN %s\n",
-                               (mpi) ? "MPI ON\n" : "", from_file);
+                               (mpi) ? mpi_cmd : "", from_file);
             if (jx > ix)
                 cs_error("command buffer length issue");
             Cstar::prebuf->setBuffer(tbuf, jx);
             free(tbuf);
+        }
+        else
+        {
+            if (mpi)
+                Cstar::prebuf->setBuffer(mpi_cmd, (int)std::strlen(mpi_cmd));
         }
     }
     else
