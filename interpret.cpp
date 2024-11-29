@@ -37,6 +37,7 @@ extern bool INCLUDEDIRECTIVE();
 extern void BLOCK(SYMSET, bool, int, int);
 extern void NEXTCHAR();
 extern void WRMPIBUF(InterpLocal *, int PNUM);
+extern bool interactive;
 void QUALIFY(InterpLocal *);
 void PARTWRITE(InterpLocal *, int START, TYPES PTYP, INDEX PREF, int PADR, bool &DONE);
 static void READLINE();
@@ -1845,10 +1846,13 @@ void showRealList(bool flg)
             {
                 //fprintf(stdout, "\n");
                 //std::cout << std::endl;
-                fputc('\n', STDOUT);
-                //fprintf(stdout, '*');
-                //std::cout << "*";
-                fputc('*', STDOUT);
+                if (interactive)
+                {
+                    fputc('\n', STDOUT);
+                    //fprintf(stdout, '*');
+                    //std::cout << "*";
+                    fputc('*', STDOUT);
+                }
 //                FREADLINE();
                 Freadline(prebuf);
 //                fprintf(STDOUT, "%s\n", &LINE[1]);
@@ -1938,6 +1942,9 @@ void showRealList(bool flg)
                     if (il->PS != InterpLocal::PS::BREAK) {
                         PRINTSTATS(il);
                     }
+                    if (interactive)  // clear any remaining data in STDIN
+                        while (!eoln(STDIN))
+                            fgetc(STDIN);
                 }
                 break;
             case CONT:
