@@ -73,6 +73,13 @@ static bool real_list = false;
 static bool symbol_list = false;
 static bool object_file = false;
 static std::string sig = "CST*";
+static std::string sigd = "DISP";
+static std::string siga = "ATAB";
+static std::string sigb = "BTAB";
+static std::string sigc = "CTAB";
+static std::string sigs = "SYMT";
+static std::string sigk = "CONS";
+static std::string sigi = "INIT";
 static std::string fto = "csto";
 static void doOption(const char *opt, const char *pgm)
 {
@@ -131,11 +138,26 @@ static void doOption(const char *opt, const char *pgm)
 static void write_obj(FILE *obj)
 {
 
-    int code_last, inst_len;
-    code_last = Cstar::LC;
-    inst_len = sizeof Cstar::CODE[0];
+    int obj_last, obj_len;
+    obj_last = Cstar::LC;
+    obj_len = sizeof Cstar::CODE[0];
     fwrite(sig.c_str(), 1, 4, obj);
-    fwrite(Cstar::CODE, inst_len, code_last, obj);
+    fwrite(Cstar::CODE, obj_len, obj_last, obj);
+    obj_last = 0;
+    while (obj_last <= LMAX && Cstar::DISPLAY[obj_last] > 0)
+    {
+        obj_last += 1;
+    }
+    obj_len = sizeof Cstar::DISPLAY[1];
+    fwrite(sigd.c_str(), 1, 4, obj);
+    fwrite(&Cstar::DISPLAY[1], obj_len, obj_last, obj);
+
+//    static std::string siga = "ATAB";
+//    static std::string sigb = "BTAB";
+//    static std::string sigc = "CTAB";
+//    static std::string sigs = "SYMT";
+//    static std::string sigk = "CONS";
+//    static std::string sigi = "INIT";
 }
 std::string obj_name(const char *fn)
 {
