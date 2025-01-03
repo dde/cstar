@@ -1130,7 +1130,8 @@ void PARAMETERLIST(BlockLocal *bl) {
             ERROR(2);
             strcpy(ID, "              ");
         }
-
+        if (bl->PRT == MAINFUNC)
+            ERROR(99);
         NOPARAMS = false;
 
         if (SY == LBRACK) {

@@ -73,7 +73,8 @@ namespace Cstar
     "", "", "", "", "", "", "", "", "", "",
     "", "", "", "", "", "", "", "", "", "",
     "", "", "", "", "", "", "", "", "", "",
-    "", "", "", "", "", "", "", "", "", "",
+    "", "", "", "", "", "", "", "", "",
+    "No Main Parameters Needed",
     "No Main Function         ",
     "Function Body            ",
     "Program Start Error      ",
@@ -191,6 +192,7 @@ namespace Cstar
 //        MSG[53] = "While Expected           ";
 //        MSG[54] = "Do Expected              ";
 //        MSG[55] = "To Expected              ";
+//        MSG[99] = "No main() Parameters     ";
 //        MSG[100] = "No Main Function         ";
 //        MSG[101] = "Function Body            ";
 //        MSG[102] = "Program Start Error      ";
