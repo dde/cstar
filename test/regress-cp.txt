@@ -1,9 +1,9 @@
 
                           C* COMPILER AND
                  PARALLEL COMPUTER SIMULATION SYSTEM 
-                             (VER. 2.1)
+                             (VER. 2.2c++)
 
-     (C) Copyright 2006 by Bruce P. Lester, All Rights Reserved
+     (C) Copyright 2007 by Bruce P. Lester, All Rights Reserved
 
 
   Basic Commands:
@@ -37,9 +37,9 @@ You can now modify your Program Source File
 
                           C* COMPILER AND
                  PARALLEL COMPUTER SIMULATION SYSTEM 
-                             (VER. 2.1)
+                             (VER. 2.2c++)
 
-     (C) Copyright 2006 by Bruce P. Lester, All Rights Reserved
+     (C) Copyright 2007 by Bruce P. Lester, All Rights Reserved
 
 
   Basic Commands:
@@ -73,9 +73,9 @@ You can now modify your Program Source File
 
                           C* COMPILER AND
                  PARALLEL COMPUTER SIMULATION SYSTEM 
-                             (VER. 2.1)
+                             (VER. 2.2c++)
 
-     (C) Copyright 2006 by Bruce P. Lester, All Rights Reserved
+     (C) Copyright 2007 by Bruce P. Lester, All Rights Reserved
 
 
   Basic Commands:
@@ -110,9 +110,9 @@ You can now modify your Program Source File
 
                           C* COMPILER AND
                  PARALLEL COMPUTER SIMULATION SYSTEM 
-                             (VER. 2.1)
+                             (VER. 2.2c++)
 
-     (C) Copyright 2006 by Bruce P. Lester, All Rights Reserved
+     (C) Copyright 2007 by Bruce P. Lester, All Rights Reserved
 
 
   Basic Commands:
@@ -147,9 +147,9 @@ You can now modify your Program Source File
 
                           C* COMPILER AND
                  PARALLEL COMPUTER SIMULATION SYSTEM 
-                             (VER. 2.1)
+                             (VER. 2.2c++)
 
-     (C) Copyright 2006 by Bruce P. Lester, All Rights Reserved
+     (C) Copyright 2007 by Bruce P. Lester, All Rights Reserved
 
 
   Basic Commands:
@@ -184,9 +184,9 @@ You can now modify your Program Source File
 
                           C* COMPILER AND
                  PARALLEL COMPUTER SIMULATION SYSTEM 
-                             (VER. 2.1)
+                             (VER. 2.2c++)
 
-     (C) Copyright 2006 by Bruce P. Lester, All Rights Reserved
+     (C) Copyright 2007 by Bruce P. Lester, All Rights Reserved
 
 
   Basic Commands:
@@ -221,9 +221,9 @@ You can now modify your Program Source File
 
                           C* COMPILER AND
                  PARALLEL COMPUTER SIMULATION SYSTEM 
-                             (VER. 2.1)
+                             (VER. 2.2c++)
 
-     (C) Copyright 2006 by Bruce P. Lester, All Rights Reserved
+     (C) Copyright 2007 by Bruce P. Lester, All Rights Reserved
 
 
   Basic Commands:
@@ -257,9 +257,9 @@ You can now modify your Program Source File
 
                           C* COMPILER AND
                  PARALLEL COMPUTER SIMULATION SYSTEM 
-                             (VER. 2.1)
+                             (VER. 2.2c++)
 
-     (C) Copyright 2006 by Bruce P. Lester, All Rights Reserved
+     (C) Copyright 2007 by Bruce P. Lester, All Rights Reserved
 
 
   Basic Commands:
@@ -294,9 +294,9 @@ You can now modify your Program Source File
 
                           C* COMPILER AND
                  PARALLEL COMPUTER SIMULATION SYSTEM 
-                             (VER. 2.1)
+                             (VER. 2.2c++)
 
-     (C) Copyright 2006 by Bruce P. Lester, All Rights Reserved
+     (C) Copyright 2007 by Bruce P. Lester, All Rights Reserved
 
 
   Basic Commands:
@@ -331,9 +331,9 @@ You can now modify your Program Source File
 
                           C* COMPILER AND
                  PARALLEL COMPUTER SIMULATION SYSTEM 
-                             (VER. 2.1)
+                             (VER. 2.2c++)
 
-     (C) Copyright 2006 by Bruce P. Lester, All Rights Reserved
+     (C) Copyright 2007 by Bruce P. Lester, All Rights Reserved
 
 
   Basic Commands:
@@ -370,9 +370,9 @@ You can now modify your Program Source File
 
                           C* COMPILER AND
                  PARALLEL COMPUTER SIMULATION SYSTEM 
-                             (VER. 2.1)
+                             (VER. 2.2c++)
 
-     (C) Copyright 2006 by Bruce P. Lester, All Rights Reserved
+     (C) Copyright 2007 by Bruce P. Lester, All Rights Reserved
 
 
   Basic Commands:
@@ -416,9 +416,9 @@ You can now modify your Program Source File
 
                           C* COMPILER AND
                  PARALLEL COMPUTER SIMULATION SYSTEM 
-                             (VER. 2.1)
+                             (VER. 2.2c++)
 
-     (C) Copyright 2006 by Bruce P. Lester, All Rights Reserved
+     (C) Copyright 2007 by Bruce P. Lester, All Rights Reserved
 
 
   Basic Commands:
@@ -472,9 +472,9 @@ You can now modify your Program Source File
 
                           C* COMPILER AND
                  PARALLEL COMPUTER SIMULATION SYSTEM 
-                             (VER. 2.1)
+                             (VER. 2.2c++)
 
-     (C) Copyright 2006 by Bruce P. Lester, All Rights Reserved
+     (C) Copyright 2007 by Bruce P. Lester, All Rights Reserved
 
 
   Basic Commands:
@@ -528,9 +528,9 @@ You can now modify your Program Source File
 
                           C* COMPILER AND
                  PARALLEL COMPUTER SIMULATION SYSTEM 
-                             (VER. 2.1)
+                             (VER. 2.2c++)
 
-     (C) Copyright 2006 by Bruce P. Lester, All Rights Reserved
+     (C) Copyright 2007 by Bruce P. Lester, All Rights Reserved
 
 
   Basic Commands:
@@ -563,9 +563,9 @@ You can now modify your Program Source File
 
                           C* COMPILER AND
                  PARALLEL COMPUTER SIMULATION SYSTEM 
-                             (VER. 2.1)
+                             (VER. 2.2c++)
 
-     (C) Copyright 2006 by Bruce P. Lester, All Rights Reserved
+     (C) Copyright 2007 by Bruce P. Lester, All Rights Reserved
 
 
   Basic Commands:
@@ -610,9 +610,9 @@ You can now modify your Program Source File
 
                           C* COMPILER AND
                  PARALLEL COMPUTER SIMULATION SYSTEM 
-                             (VER. 2.1)
+                             (VER. 2.2c++)
 
-     (C) Copyright 2006 by Bruce P. Lester, All Rights Reserved
+     (C) Copyright 2007 by Bruce P. Lester, All Rights Reserved
 
 
   Basic Commands:
@@ -657,9 +657,9 @@ You can now modify your Program Source File
 
                           C* COMPILER AND
                  PARALLEL COMPUTER SIMULATION SYSTEM 
-                             (VER. 2.1)
+                             (VER. 2.2c++)
 
-     (C) Copyright 2006 by Bruce P. Lester, All Rights Reserved
+     (C) Copyright 2007 by Bruce P. Lester, All Rights Reserved
 
 
   Basic Commands:
@@ -699,9 +699,9 @@ You can now modify your Program Source File
 
                           C* COMPILER AND
                  PARALLEL COMPUTER SIMULATION SYSTEM 
-                             (VER. 2.1)
+                             (VER. 2.2c++)
 
-     (C) Copyright 2006 by Bruce P. Lester, All Rights Reserved
+     (C) Copyright 2007 by Bruce P. Lester, All Rights Reserved
 
 
   Basic Commands:
@@ -734,9 +734,9 @@ You can now modify your Program Source File
 
                           C* COMPILER AND
                  PARALLEL COMPUTER SIMULATION SYSTEM 
-                             (VER. 2.1)
+                             (VER. 2.2c++)
 
-     (C) Copyright 2006 by Bruce P. Lester, All Rights Reserved
+     (C) Copyright 2007 by Bruce P. Lester, All Rights Reserved
 
 
   Basic Commands:
@@ -772,9 +772,9 @@ You can now modify your Program Source File
 
                           C* COMPILER AND
                  PARALLEL COMPUTER SIMULATION SYSTEM 
-                             (VER. 2.1)
+                             (VER. 2.2c++)
 
-     (C) Copyright 2006 by Bruce P. Lester, All Rights Reserved
+     (C) Copyright 2007 by Bruce P. Lester, All Rights Reserved
 
 
   Basic Commands:
@@ -935,9 +935,9 @@ You can now modify your Program Source File
 
                           C* COMPILER AND
                  PARALLEL COMPUTER SIMULATION SYSTEM 
-                             (VER. 2.1)
+                             (VER. 2.2c++)
 
-     (C) Copyright 2006 by Bruce P. Lester, All Rights Reserved
+     (C) Copyright 2007 by Bruce P. Lester, All Rights Reserved
 
 
   Basic Commands:
@@ -978,9 +978,9 @@ You can now modify your Program Source File
 
                           C* COMPILER AND
                  PARALLEL COMPUTER SIMULATION SYSTEM 
-                             (VER. 2.1)
+                             (VER. 2.2c++)
 
-     (C) Copyright 2006 by Bruce P. Lester, All Rights Reserved
+     (C) Copyright 2007 by Bruce P. Lester, All Rights Reserved
 
 
   Basic Commands:
@@ -1034,9 +1034,9 @@ You can now modify your Program Source File
 
                           C* COMPILER AND
                  PARALLEL COMPUTER SIMULATION SYSTEM 
-                             (VER. 2.1)
+                             (VER. 2.2c++)
 
-     (C) Copyright 2006 by Bruce P. Lester, All Rights Reserved
+     (C) Copyright 2007 by Bruce P. Lester, All Rights Reserved
 
 
   Basic Commands:
@@ -1074,9 +1074,9 @@ You can now modify your Program Source File
 
                           C* COMPILER AND
                  PARALLEL COMPUTER SIMULATION SYSTEM 
-                             (VER. 2.1)
+                             (VER. 2.2c++)
 
-     (C) Copyright 2006 by Bruce P. Lester, All Rights Reserved
+     (C) Copyright 2007 by Bruce P. Lester, All Rights Reserved
 
 
   Basic Commands:
@@ -1122,9 +1122,9 @@ You can now modify your Program Source File
 
                           C* COMPILER AND
                  PARALLEL COMPUTER SIMULATION SYSTEM 
-                             (VER. 2.1)
+                             (VER. 2.2c++)
 
-     (C) Copyright 2006 by Bruce P. Lester, All Rights Reserved
+     (C) Copyright 2007 by Bruce P. Lester, All Rights Reserved
 
 
   Basic Commands:
@@ -1158,9 +1158,9 @@ You can now modify your Program Source File
 
                           C* COMPILER AND
                  PARALLEL COMPUTER SIMULATION SYSTEM 
-                             (VER. 2.1)
+                             (VER. 2.2c++)
 
-     (C) Copyright 2006 by Bruce P. Lester, All Rights Reserved
+     (C) Copyright 2007 by Bruce P. Lester, All Rights Reserved
 
 
   Basic Commands:
@@ -1212,9 +1212,9 @@ You can now modify your Program Source File
 
                           C* COMPILER AND
                  PARALLEL COMPUTER SIMULATION SYSTEM 
-                             (VER. 2.1)
+                             (VER. 2.2c++)
 
-     (C) Copyright 2006 by Bruce P. Lester, All Rights Reserved
+     (C) Copyright 2007 by Bruce P. Lester, All Rights Reserved
 
 
   Basic Commands:
@@ -1315,9 +1315,9 @@ You can now modify your Program Source File
 
                           C* COMPILER AND
                  PARALLEL COMPUTER SIMULATION SYSTEM 
-                             (VER. 2.1)
+                             (VER. 2.2c++)
 
-     (C) Copyright 2006 by Bruce P. Lester, All Rights Reserved
+     (C) Copyright 2007 by Bruce P. Lester, All Rights Reserved
 
 
   Basic Commands:
@@ -1360,9 +1360,9 @@ You can now modify your Program Source File
 
                           C* COMPILER AND
                  PARALLEL COMPUTER SIMULATION SYSTEM 
-                             (VER. 2.1)
+                             (VER. 2.2c++)
 
-     (C) Copyright 2006 by Bruce P. Lester, All Rights Reserved
+     (C) Copyright 2007 by Bruce P. Lester, All Rights Reserved
 
 
   Basic Commands:
@@ -1408,9 +1408,9 @@ You can now modify your Program Source File
 
                           C* COMPILER AND
                  PARALLEL COMPUTER SIMULATION SYSTEM 
-                             (VER. 2.1)
+                             (VER. 2.2c++)
 
-     (C) Copyright 2006 by Bruce P. Lester, All Rights Reserved
+     (C) Copyright 2007 by Bruce P. Lester, All Rights Reserved
 
 
   Basic Commands:
@@ -1471,9 +1471,9 @@ You can now modify your Program Source File
 
                           C* COMPILER AND
                  PARALLEL COMPUTER SIMULATION SYSTEM 
-                             (VER. 2.1)
+                             (VER. 2.2c++)
 
-     (C) Copyright 2006 by Bruce P. Lester, All Rights Reserved
+     (C) Copyright 2007 by Bruce P. Lester, All Rights Reserved
 
 
   Basic Commands:
@@ -1516,9 +1516,9 @@ You can now modify your Program Source File
 
                           C* COMPILER AND
                  PARALLEL COMPUTER SIMULATION SYSTEM 
-                             (VER. 2.1)
+                             (VER. 2.2c++)
 
-     (C) Copyright 2006 by Bruce P. Lester, All Rights Reserved
+     (C) Copyright 2007 by Bruce P. Lester, All Rights Reserved
 
 
   Basic Commands:
@@ -1561,9 +1561,9 @@ You can now modify your Program Source File
 
                           C* COMPILER AND
                  PARALLEL COMPUTER SIMULATION SYSTEM 
-                             (VER. 2.1)
+                             (VER. 2.2c++)
 
-     (C) Copyright 2006 by Bruce P. Lester, All Rights Reserved
+     (C) Copyright 2007 by Bruce P. Lester, All Rights Reserved
 
 
   Basic Commands:
@@ -1605,9 +1605,9 @@ You can now modify your Program Source File
 
                           C* COMPILER AND
                  PARALLEL COMPUTER SIMULATION SYSTEM 
-                             (VER. 2.1)
+                             (VER. 2.2c++)
 
-     (C) Copyright 2006 by Bruce P. Lester, All Rights Reserved
+     (C) Copyright 2007 by Bruce P. Lester, All Rights Reserved
 
 
   Basic Commands:
@@ -1670,9 +1670,9 @@ You can now modify your Program Source File
 
                           C* COMPILER AND
                  PARALLEL COMPUTER SIMULATION SYSTEM 
-                             (VER. 2.1)
+                             (VER. 2.2c++)
 
-     (C) Copyright 2006 by Bruce P. Lester, All Rights Reserved
+     (C) Copyright 2007 by Bruce P. Lester, All Rights Reserved
 
 
   Basic Commands:
@@ -1709,9 +1709,9 @@ You can now modify your Program Source File
 
                           C* COMPILER AND
                  PARALLEL COMPUTER SIMULATION SYSTEM 
-                             (VER. 2.1)
+                             (VER. 2.2c++)
 
-     (C) Copyright 2006 by Bruce P. Lester, All Rights Reserved
+     (C) Copyright 2007 by Bruce P. Lester, All Rights Reserved
 
 
   Basic Commands:
@@ -1748,9 +1748,9 @@ You can now modify your Program Source File
 
                           C* COMPILER AND
                  PARALLEL COMPUTER SIMULATION SYSTEM 
-                             (VER. 2.1)
+                             (VER. 2.2c++)
 
-     (C) Copyright 2006 by Bruce P. Lester, All Rights Reserved
+     (C) Copyright 2007 by Bruce P. Lester, All Rights Reserved
 
 
   Basic Commands:
@@ -1796,9 +1796,9 @@ You can now modify your Program Source File
 
                           C* COMPILER AND
                  PARALLEL COMPUTER SIMULATION SYSTEM 
-                             (VER. 2.1)
+                             (VER. 2.2c++)
 
-     (C) Copyright 2006 by Bruce P. Lester, All Rights Reserved
+     (C) Copyright 2007 by Bruce P. Lester, All Rights Reserved
 
 
   Basic Commands:
@@ -1845,9 +1845,9 @@ You can now modify your Program Source File
 
                           C* COMPILER AND
                  PARALLEL COMPUTER SIMULATION SYSTEM 
-                             (VER. 2.1)
+                             (VER. 2.2c++)
 
-     (C) Copyright 2006 by Bruce P. Lester, All Rights Reserved
+     (C) Copyright 2007 by Bruce P. Lester, All Rights Reserved
 
 
   Basic Commands:
@@ -1884,9 +1884,9 @@ You can now modify your Program Source File
 
                           C* COMPILER AND
                  PARALLEL COMPUTER SIMULATION SYSTEM 
-                             (VER. 2.1)
+                             (VER. 2.2c++)
 
-     (C) Copyright 2006 by Bruce P. Lester, All Rights Reserved
+     (C) Copyright 2007 by Bruce P. Lester, All Rights Reserved
 
 
   Basic Commands:

@@ -4,7 +4,8 @@ from subprocess import Popen, PIPE, run
 
 
 def usage(_pgm,  _onam, _typs):
-    print(_pgm + ": a Python program for C* (Pascal) and C* (C++) code generation comparison")
+    # print(_pgm + ": a Python program for C* (Pascal) and C* (C++) code generation comparison")
+    print(_pgm + ": a Python program for C* (C++) release code generation comparison")
     print("usage: " + _pgm + " [-v vers]")
     print("  v version added to the output file names")
     print("    output in " + _onam + "-" + _typs[0] + "-version.txt and " +
@@ -27,7 +28,7 @@ def run_pgm(_pgm: str, _cmds: [str], _sout: str):
     _sofd.close()
 
 
-typs = ("cp", "ps")
+typs = ("cp", "pv")
 vers = ("", "")
 onam = 'opcodes'
 outcp = onam + '-' + typs[0] + vers[0] + '.txt'
@@ -56,7 +57,8 @@ if os.name == 'nt':
     pgm2 = '/Users/Dan/Dropbox/parallel/cstar.exe'
 elif os.name == 'posix':
     pgm1 = '/Users/danevans/ClionProjects/cstar/cmake-build-' + which + '/cstar'
-    pgm2 = '/Users/danevans/Library/CloudStorage/Dropbox/parallel/cstar'
+    pgm2 = '/Users/danevans/ClionProjects/cstar/parallel/cstar+'
+    # pgm2 = '/Users/danevans/Library/CloudStorage/Dropbox/parallel/cstar'
 else:
     print('unknown OS')
     exit(1)

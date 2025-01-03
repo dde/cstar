@@ -1,9 +1,9 @@
 
                           C* COMPILER AND
                  PARALLEL COMPUTER SIMULATION SYSTEM 
-                             (VER. 2.1)
+                             (VER. 2.2c++)
 
-     (C) Copyright 2006 by Bruce P. Lester, All Rights Reserved
+     (C) Copyright 2007 by Bruce P. Lester, All Rights Reserved
 
 
   Basic Commands:
@@ -21,13 +21,16 @@ ct0.c Successfully Compiled
 To View a Complete Program Listing, See File LISTFILE.TXT
 
 *
+*
 
+*
 *
 Break At 24  In Function MAIN          
 Process Number  0
 
 
 
+*
 *   PROCESS #   FUNCTION       LINE NUMBER  STATUS   PROCESSOR
        0        MAIN               24      RUNNING      0
        1        PROC                7      BLOCKED      1
@@ -35,17 +38,21 @@ Process Number  0
        3        PROC                7      BLOCKED      3
 
 *
-
-
-
 *
 
 
 
 *
+*
 
 
 
+*
+*
+
+
+
+*
 *Breakpoints at Following Lines:
 24
 
@@ -57,11 +64,13 @@ Variable Name             Memory Location
 Listing File for your Source Program: LISTFILE.TXT
 
 *
+*
 Break At 24  In Function MAIN          
 Process Number  0
 
 
 
+*
 *Reference to Trace Variable ix                  
 Line Number    9  In Function PROC          
 Process Number   1
@@ -69,17 +78,20 @@ Process Number   1
 
 
 *
+*
 Break At 24  In Function MAIN          
 Process Number  0
 
 
 
+*
 *Reference to Trace Variable ix                  
 Line Number   14  In Function PROC          
 Process Number   1
 
 
 
+*
 *   2   0   0
 Reference to Trace Variable jx                  
 Line Number   11  In Function PROC          
@@ -87,12 +99,14 @@ Process Number   2
 
 
 
+*
 *   0Reference to Trace Variable jx                  
 Line Number   15  In Function PROC          
 Process Number   2
 
 
 
+*
 *   3   0
 Reference to Trace Variable kx                  
 Line Number   13  In Function PROC          
@@ -100,6 +114,7 @@ Process Number   3
 
 
 
+*
 *   0   0Reference to Trace Variable kx                  
 Line Number   16  In Function PROC          
 Process Number   3
@@ -107,11 +122,15 @@ Process Number   3
 
 
 *
-
 *
 
 *
+*
 
+*
+*
+
+*
 *   4
 
 
@@ -120,14 +139,15 @@ PARALLEL EXECUTION TIME: 194
 SPEEDUP:    1.82
 NUMBER OF PROCESSORS USED: 4
 
+*
 *TERMINATE C* SYSTEM
 
 
                           C* COMPILER AND
                  PARALLEL COMPUTER SIMULATION SYSTEM 
-                             (VER. 2.1)
+                             (VER. 2.2c++)
 
-     (C) Copyright 2006 by Bruce P. Lester, All Rights Reserved
+     (C) Copyright 2007 by Bruce P. Lester, All Rights Reserved
 
 
   Basic Commands:
@@ -144,6 +164,7 @@ RankSortParaStat.c Successfully Compiled
 
 To View a Complete Program Listing, See File LISTFILE.TXT
 
+*
 *  20   6831, 8431, 8629, 3500, 8590,
   21   9603, 4054, 2941, 8517, 5313,
   22   3202, 6545, 7925, 4649, 5207,
@@ -157,7 +178,9 @@ To View a Complete Program Listing, See File LISTFILE.TXT
   30 void putinPlace( int src ) {
 
 *
+*
 
+*
 *TIME: 0
 0 1 2 3 4 5         10       
 *                     
@@ -714,7 +737,9 @@ SPEEDUP:    9.24
 NUMBER OF PROCESSORS USED: 11
 
 *
+*
 
+*
 *TIME: 0
 0 1 2 3 4 5         10       
 *                     
@@ -725,11 +750,13 @@ Process Number  1
 
 
 *
+*
 Break At 34  In Function PUTINPLACE    
 Process Number  2
 
 
 
+*
 *   PROCESS #   FUNCTION       LINE NUMBER  STATUS   PROCESSOR
        0        MAIN               59      BLOCKED      0
        1        PUTINPLACE         37      RUNNING      1
@@ -737,11 +764,13 @@ Process Number  2
        3        MAIN               59      RUNNING      0
 
 *
+*
 Break At 34  In Function PUTINPLACE    
 Process Number  3
 
 
 
+*
 *   PROCESS #   FUNCTION       LINE NUMBER  STATUS   PROCESSOR
        0        MAIN               59      BLOCKED      0
        1        PUTINPLACE         38      RUNNING      1
@@ -750,11 +779,13 @@ Process Number  3
        4        MAIN               59      RUNNING      0
 
 *
+*
 Break At 34  In Function PUTINPLACE    
 Process Number  4
 
 
 
+*
 *   PROCESS #   FUNCTION       LINE NUMBER  STATUS   PROCESSOR
        0        MAIN               59      BLOCKED      0
        1        PUTINPLACE         41      RUNNING      1
@@ -765,7 +796,9 @@ Process Number  4
        6        MAIN               59      RUNNING      0
 
 *
+*
 
+*
 *TIME: 190
 0 1 2 3 4 5         10       
 + * * * * * * * + + - 
@@ -1320,17 +1353,19 @@ SPEEDUP:    9.24
 NUMBER OF PROCESSORS USED: 11
 
 *
+*
 You can now modify your Program Source File
 
 
+*
 *TERMINATE C* SYSTEM
 
 
                           C* COMPILER AND
                  PARALLEL COMPUTER SIMULATION SYSTEM 
-                             (VER. 2.1)
+                             (VER. 2.2c++)
 
-     (C) Copyright 2006 by Bruce P. Lester, All Rights Reserved
+     (C) Copyright 2007 by Bruce P. Lester, All Rights Reserved
 
 
   Basic Commands:
@@ -1348,7 +1383,9 @@ RankSortParaStat.c Successfully Compiled
 To View a Complete Program Listing, See File LISTFILE.TXT
 
 *
+*
 
+*
 *
 Alarm Went Off at Time 1500
 
@@ -1358,7 +1395,9 @@ Process Number  1
 
 
 *
+*
 
+*
 *
 Alarm Went Off at Time 10000
 
@@ -1368,30 +1407,37 @@ Process Number  1
 
 
 *
+*
 
+*
 *
 
 
 
+*
 *
 List of Trace Variables:
 Variable Name             Memory Location
    testval                     318
 Listing File for your Source Program: LISTFILE.TXT
 
+*
 *Reference to Trace Variable testval             
 Line Number   38  In Function PUTINPLACE    
 Process Number   1
 
 
 
+*
 *Name Not Found
 
 
 *
+*
 
 6303
 
+*
 *Since Start of Program:
      Elapsed Time:  10010
      Number of Processors Used:  11
@@ -1401,6 +1447,7 @@ Since Last Breakpoint:
      Elapsed Time:  10
      Speedup:   10.30
 
+*
 *Reference to Trace Variable testval             
 Line Number   39  In Function PUTINPLACE    
 Process Number   1
@@ -1408,9 +1455,12 @@ Process Number   1
 
 
 *
+*
 
+*
 *Listing File for your Source Program: LISTFILE.TXT
 
+*
 *   0 1218 1291 1410 1550 1601 1807 1918 1948 2179 
 2247 2333 2341 2367 2502 2540 2585 2635 2654 2665 
 2715 2813 2941 3202 3500 3542 3554 3657 3705 3816 
@@ -1428,14 +1478,15 @@ PARALLEL EXECUTION TIME: 48818
 SPEEDUP:    9.24
 NUMBER OF PROCESSORS USED: 11
 
+*
 *TERMINATE C* SYSTEM
 
 
                           C* COMPILER AND
                  PARALLEL COMPUTER SIMULATION SYSTEM 
-                             (VER. 2.1)
+                             (VER. 2.2c++)
 
-     (C) Copyright 2006 by Bruce P. Lester, All Rights Reserved
+     (C) Copyright 2007 by Bruce P. Lester, All Rights Reserved
 
 
   Basic Commands:
@@ -1453,7 +1504,9 @@ RankSortParaStat.c Successfully Compiled
 To View a Complete Program Listing, See File LISTFILE.TXT
 
 *
+*
 
+*
 *
 Alarm Went Off at Time 1500
 
@@ -1463,7 +1516,9 @@ Process Number  1
 
 
 *
+*
 
+*
 *
 Alarm Went Off at Time 10000
 
@@ -1473,30 +1528,37 @@ Process Number  1
 
 
 *
+*
 
+*
 *
 
 
 
+*
 *
 List of Trace Variables:
 Variable Name             Memory Location
    testval                     318
 Listing File for your Source Program: LISTFILE.TXT
 
+*
 *Reference to Trace Variable testval             
 Line Number   38  In Function PUTINPLACE    
 Process Number   1
 
 
 
+*
 *Name Not Found
 
 
 *
+*
 
 6303
 
+*
 *Since Start of Program:
      Elapsed Time:  10010
      Number of Processors Used:  11
@@ -1506,10 +1568,13 @@ Since Last Breakpoint:
      Elapsed Time:  10
      Speedup:   10.30
 
+*
 *All Debugger Settings are now reset to Default values
 
+*
 *Listing File for your Source Program: LISTFILE.TXT
 
+*
 *   0 1218 1291 1410 1550 1601 1807 1918 1948 2179 
 2247 2333 2341 2367 2502 2540 2585 2635 2654 2665 
 2715 2813 2941 3202 3500 3542 3554 3657 3705 3816 
@@ -1527,5 +1592,6 @@ PARALLEL EXECUTION TIME: 48818
 SPEEDUP:    9.24
 NUMBER OF PROCESSORS USED: 11
 
+*
 *TERMINATE C* SYSTEM
 
