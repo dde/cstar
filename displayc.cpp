@@ -247,10 +247,10 @@ namespace Cstar
             fprintf(STDOUT, "  D%d %d\n", ix, DISPLAY[ix]);
             ix += 1;
         }
-        fprintf(STDOUT, "Indx  Last LstPr PSize VSize PrCnt\n");
+        fprintf(STDOUT, "Index  LAST LASTPAR PSIZE VSIZE PARCNT\n");
         for (ix = 0; ix <= B; ++ix)
         {
-            fprintf(STDOUT, "%4d %5d %5d %5d %5d %5d\n", ix,
+            fprintf(STDOUT, "%5d %5d %7d %5d %5d %6d\n", ix,
                     BTAB[ix].LAST,
                     BTAB[ix].LASTPAR,
                     BTAB[ix].PSIZE,
@@ -279,10 +279,10 @@ namespace Cstar
     {
         int ix;
         fprintf(STDOUT, "Real Constants\n");
-        fprintf(STDOUT, "Indx     RConst  IConval    RConval\n");
+        fprintf(STDOUT, "Indx       RConst    IConval      RConval\n");
         for (ix = 0; ix <= CPNT; ++ix)
         {
-            fprintf(STDOUT, "%4d %12.6f %6d %12.6f\n", ix, CONTABLE[ix], INITABLE[ix].IVAL, INITABLE[ix].RVAL);
+            fprintf(STDOUT, "%4d %12.6f %10d %12.6f\n", ix, CONTABLE[ix], INITABLE[ix].IVAL, INITABLE[ix].RVAL);
         }
     }
     const char *lookupSym(int lev, int adr)

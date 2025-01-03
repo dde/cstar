@@ -151,7 +151,7 @@ namespace Cstar
                 break;
             case 19:
                 snprintf(ibuf, sizeof ibuf, "%4d: %3d %d,%d %s %s\n", ix,
-                         F, X, Y, op, TAB[X].NAME);
+                         F, X, Y, op, (X == 0) ? "" : TAB[X].NAME);
                 break;
             case 23:
             case 110:
@@ -261,10 +261,10 @@ namespace Cstar
             fprintf(STDOUT, "  D%d %d\n", ix, DISPLAY[ix]);
             ix += 1;
         }
-        fprintf(STDOUT, "Indx  Last LstPr PSize VSize PrCnt\n");
+        fprintf(STDOUT, "Index  LAST LASTPAR PSIZE VSIZE PARCNT\n");
         for (ix = 0; ix <= B; ++ix)
         {
-            fprintf(STDOUT, "%4d %5d %5d %5d %5d %5d\n", ix,
+            fprintf(STDOUT, "%5d %5d %7d %5d %5d %6d\n", ix,
                     BTAB[ix].LAST,
                     BTAB[ix].LASTPAR,
                     BTAB[ix].PSIZE,
@@ -293,10 +293,10 @@ namespace Cstar
     {
         int ix;
         fprintf(STDOUT, "Real Constants\n");
-        fprintf(STDOUT, "Indx     RConst  IConval    RConval\n");
+        fprintf(STDOUT, "Indx       RConst    IConval      RConval\n");
         for (ix = 0; ix <= CPNT; ++ix)
         {
-            fprintf(STDOUT, "%4d %12.6f %6d %12.6f\n", ix, CONTABLE[ix], INITABLE[ix].IVAL, INITABLE[ix].RVAL);
+            fprintf(STDOUT, "%4d %12.6f %10d %12.6f\n", ix, CONTABLE[ix], INITABLE[ix].IVAL, INITABLE[ix].RVAL);
         }
     }
     void dumpPDES(PROCPNT pd)
