@@ -32,9 +32,9 @@ namespace Cstar
     extern void C_PNTCHANTYP(BlockLocal *, TYPES &, long &, long &);
     extern void C_ARRAYTYP(BlockLocal *, long &, long &, bool FIRSTINDEX, TYPES, long, long);
     extern void TYPF(BlockLocal *bl, SYMSET FSYS, TYPES &TP, long &RF, long &SZ);
+    extern void PARAMETERLIST(BlockLocal *);
     void FACTOR(BasicLocal *, SYMSET &, ITEM &);
     void EXPRESSION(BlockLocal *, SYMSET &, ITEM &);
-    void PARAMETERLIST(BlockLocal *);
     void ASSIGNEXPRESSION(BasicLocal *, SYMSET &, ITEM &);
     static const int NWORDS = 9;
     //static int F;  // decl in BASICEXPRESSION, set in FACTOR
