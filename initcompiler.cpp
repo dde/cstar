@@ -1,6 +1,7 @@
 //
 // Created by Dan Evans on 11/15/24.
 //
+#include <cstring>
 #include "cs_global.h"
 #include "cs_compile.h"
 #include "cs_errors.h"
