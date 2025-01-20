@@ -2,7 +2,7 @@ cmake_minimum_required(VERSION 3.5)
 project(cstar)
 
 # set(CMAKE_CXX_STANDARD 17)
-if(${CMAKE_SYSTEM_NAME} EQUAL "Darwin")
+if(${CMAKE_SYSTEM_NAME} STREQUAL "Darwin")
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -DMAC -std=c++11")
 else()
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")
@@ -10,7 +10,7 @@ endif()
 
 # set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -DDEBUG -g -ggdb -ggnu-pubnames -std=c++11")
 
-if(${CMAKE_SYSTEM_NAME} EQUAL "Windows")
+if(${CMAKE_SYSTEM_NAME} STREQUAL "Windows")
     set(CMAKE_EXE_LINKER_FLAGS "-static")
 endif()
 set(HEADERS cs_global.h cs_basic.h cs_block.h cs_compile.h cs_defines.h cs_errors.h
