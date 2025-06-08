@@ -34,7 +34,7 @@ namespace Cstar
                                        "setwidth/prec", "end",
                                        "returnv",
                                        "return",
-                                       "rplindfmstk",
+                                       "pushind",
                                        "not", "negate",
                                        "outreal",
                                        "stindstk", "", "", "",
@@ -55,7 +55,7 @@ namespace Cstar
                                        "outendl", "recvchvar", "recvch[var]", "send",
                                        "fork", "",
                                        "procend --fork",
-                                       "procend --child",
+                                       "procend --forall",
                                        "recvch[T]", "",
                                        "pushprcr",
                                        "forall",
@@ -89,6 +89,9 @@ namespace Cstar
     static const char *priority[] = {"LOW", "HIGH"};
     static const char *objects[] = {"KONSTANT", "VARIABLE", "TYPE1", "PROZEDURE",
                                     "FUNKTION", "COMPONENT", "STRUCTAG"};
+    static const int FuncType = 4;
+    static const int ProcType = 3;
+    static const int VarType = 1;
     static const char *nosym = "nosym";
     static const char *prepost[] = {"pre", "post"};
     static const char *sysname[] = {"", "", "", "", "", "", "", "", "", "",
@@ -292,11 +295,32 @@ namespace Cstar
     void dumpReals()
     {
         int ix;
-        fprintf(STDOUT, "Real Constants\n");
-        fprintf(STDOUT, "Indx       RConst    IConval      RConval\n");
+        std::vector<INITPAIR>::const_iterator vi;
+        fprintf(STDOUT, "Constant Table\n");
+        fprintf(STDOUT, "Indx        Const\n");
         for (ix = 0; ix <= CPNT; ++ix)
         {
-            fprintf(STDOUT, "%4d %12.6f %10d %12.6f\n", ix, CONTABLE[ix], INITABLE[ix].IVAL, INITABLE[ix].RVAL);
+            fprintf(STDOUT, "%4d %12.6f\n", ix, CONTABLE[ix]);
+        }
+        fprintf(STDOUT, "Initial Table\n");
+        fprintf(STDOUT, "Indx       IVAL         RVAL\n");
+        ix = 0;
+        vi = INITABLE.begin();
+        while (ix <= ITPNT && vi != INITABLE.end())
+        {
+            fprintf(STDOUT, "%4d %10d %12.6f\n", ix, (*vi).IVAL, (*vi).RVAL);
+            ++ix;
+            ++vi;
+        }
+    }
+    void dumpStrings()
+    {
+        int ix = 0;
+        fprintf(STDOUT, "String Table\n");
+        while (ix < SX)
+        {
+            fprintf(STDOUT, "%4d %s\n", ix, &STAB[ix]);
+            ix += 1 + (int)strlen(&STAB[ix]);
         }
     }
     void dumpPDES(PROCPNT pd)
@@ -528,13 +552,35 @@ namespace Cstar
 //            if (TAB[ix].ADR == adr && TAB[ix].LEV == lev)
 //                return TAB[ix].NAME;
 //        }
-        ix = BTAB[lev].LAST;
-        while (ix != 0)
+        if (lev == 0)
+            return nosym;
+        if (lev == 1)  // global
         {
-            if (TAB[ix].ADR == adr)
-                return TAB[ix].NAME;
-            ix = TAB[ix].LINK;
+            ix = 1;
+            while (ix <= Tx)
+            {
+                if (lev == TAB[ix].LEV && adr == TAB[ix].ADR)
+                    return TAB[ix].NAME;
+                ix += 1;
+            }
         }
+        else
+        {
+            ix = curExec.functionSymtabIndex + 1;
+            while (ix <= Tx && TAB[ix].TYP != FuncType && TAB[ix].TYP != ProcType)
+            {
+                if (lev == TAB[ix].LEV && adr == TAB[ix].ADR)
+                    return TAB[ix].NAME;
+                ix += 1;
+            }
+        }
+//        ix = BTAB[lev].LAST;
+//        while (ix != 0)
+//        {
+//            if (TAB[ix].ADR == adr)
+//                return TAB[ix].NAME;
+//            ix = TAB[ix].LINK;
+//        }
         return nosym;
     }
     const char *arrayName(int ref)
