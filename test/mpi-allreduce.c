@@ -15,13 +15,16 @@ void a_func(int rnk)
 int main()
 {
   int myrank, totalproc;
+  int mr;
   /*
   cout.precision(1);
   */
-  MPI_Init();
+  mr = MPI_Init();
   MPI_Comm_rank(MPI_COMM_WORLD, &myrank);
+  cout << "MPI_Init() rank " << myrank << " returns " << mr << endl;
   MPI_Comm_size(MPI_COMM_WORLD, &totalproc);
   a_func(myrank);
-  MPI_Finalize();
+  mr = MPI_Finalize();
+  cout << "MPI_Finalize() rank " << myrank << " returns " << mr << endl;
   return 0;
 }
