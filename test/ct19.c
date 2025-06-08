@@ -98,7 +98,7 @@ int main()
   emsg.valu = 0;
   emsg.aggr = 0.0;
   send(aga[0], emsg);
-  join;
+  /*join;*/
   cout << "finished" << endl;
   return 0;
 }
