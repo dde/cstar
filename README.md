@@ -94,12 +94,6 @@ will display brief help.)
 * green right triangle - the Run button
 * green bug - the debug button
 
-___Windows (only)___
-In the displayed CMakeLists.txt file, edit the 5th line to remove "-DMAC".
-
-<!--Open the file `program.cpp` in a new Edit tab by doubling clicking.  Scroll to the end.  If line 545 is not
-commented out, then comment it out (//)-->
-
 **Click the Hammer icon to build. Build actions will display in a lower pane.  "Build finished" will display when complete.
 
 To set the Run/Debug configuration, In the Title bar, click `cstar` (Run/Debug Configurations) to get the menu, then
@@ -131,6 +125,34 @@ The Mac executables are
 
 `./cmake-build-debug/cstar`
 `./cmake-build-release/cstar`
+
+### Linux (Ubuntu command line)
+
+1. Install git and cmake if not already installed
+
+   sudo apt-get install git
+   sudo apt-get install cmake
+
+2. clone Cstar
+
+   git clone https://github.com.dde/cstar
+
+3. Generate a Project Build System with cmake
+   in the parent directory of cstar, issue
+
+   cmake -B cstar-build -S cstar
+
+   this will create a cstar-build directory parallel to the cstar source directory
+   and put the build files into it
+
+4. In the cstar directory, edit the CMakeLists.txt file.
+
+5. Build cstar
+   in the parent directory of cstar, issue
+
+   cmake --build cstar-build
+
+   The ten cstar source files are compiled, and the excutable, cstar, is created in the cstar-build directory
 
 ## Testing
 
