@@ -24,6 +24,7 @@ extern void dumpSymbols();
 extern void dumpArrays();
 extern void dumpBlocks();
 extern void dumpReals();
+extern void dumpStrings();
 extern void dumpChans(InterpLocal *);
 extern void dumpStkfrms(InterpLocal *);
 extern void dumpProctab(InterpLocal *);
@@ -1402,6 +1403,23 @@ void showRealList(bool flg)
                 fprintf(STDOUT, "SPEEDUP:  %6.2f\n", il->SPEED);
             }
             fprintf(STDOUT, "NUMBER OF PROCESSORS USED: %d\n", il->USEDPROCS);
+            // il->H1 -= il->USEDPROCS - 1;
+            il->H1= 0;
+            il->PTEMP = il->ACPHEAD;
+            if (il->PTEMP != nullptr)
+                do
+                {
+//                    if (il->PTEMP->PDES->STATE != PROCESSDESCRIPTOR::STATE::TERMINATED)
+//                        il->H1 += 1;
+                    il->H1 += il->PTEMP->PDES->JOINSEM;
+                    il->PTEMP = il->PTEMP->NEXT;
+                }
+                while (il->PTEMP != il->ACPHEAD);
+            if (!MPIMODE && il->H1 > 0)
+            {
+                fprintf(STDOUT, "%d PROCESS%s NOT JOINED\n", il->H1,
+                        (il->H1 > 1) ? "ES" : "");
+            }
         } else
         {
             //fprintf(STDOUT, OUTP);
@@ -1413,6 +1431,12 @@ void showRealList(bool flg)
                 fprintf(OUTP, "SPEEDUP:  %6.2f\n", il->SPEED);
             }
             fprintf(OUTP, "NUMBER OF PROCESSORS USED: %d\n", il->USEDPROCS);
+            il->H1 -= il->USEDPROCS - 1;
+            if (il->H1 < 0)
+            {
+                fprintf(OUTP, "%d PROCESS%s NOT JOINED\n", -il->H1,
+                        (il->H1 < -1) ? "ES" : "");
+            }
             // (*OUTP).close();
             fclose(OUTP);
             OUTPUTOPEN = false;
@@ -2930,7 +2954,10 @@ void showRealList(bool flg)
                     if (array_list)
                         dumpArrays();
                     if (real_list)
+                    {
                         dumpReals();
+                        dumpStrings();
+                    }
                 } else
                 {
                     ERRORMSG();
