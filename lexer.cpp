@@ -200,10 +200,13 @@ namespace Cstar
                     INSRC = fopen(FILENAME.c_str(), "r");
                     if (!INSRC)
                     {
+                        --iStackIndex;
                         ERROR(150);
                     }
                     else
                     {
+                        if (FILENAME == "mpi.h")
+                            MPIMODE = true;
                         iStack[iStackIndex].fname = FILENAME;
                         iStack[iStackIndex].inc = INSRC;
                         INCLUDEFLAG = true;
