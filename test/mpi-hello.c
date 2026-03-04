@@ -1,6 +1,6 @@
 ARCHITECTURE RING(2);
 #include <mpi.h>
-int myrank, totalproc; 
+int myrank = -1, totalproc = -1; 
 
 main( ) {
   cout.precision(6);
