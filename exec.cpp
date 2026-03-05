@@ -2142,6 +2142,22 @@ namespace Cstar
                                     il->S[proc->T] = el.H2;
                                 }
                             }
+                            else
+                            {
+                                if (el.IR.X > 0)
+                                {   // implement the FORK closures
+                                    for (el.I = 0; el.I < el.IR.X; el.I += 1)
+                                    {
+                                        el.J = il->S[CURPR->T];      // closure parameter stack location
+                                        el.K = proc->BASE + el.I;    // stack frame prefix location
+                                        il->SLOCATION[el.K] = el.J;  // closure stack location to SLOCATION
+                                        il->S[el.K] = il->S[el.J];   // closure value to stack frame prefix
+                                        CURPR->T -= 1;               // stack location of next parameter
+                                    }
+                                    proc->FORLEVEL = el.IR.X;
+                                    proc->T += el.IR.X;
+                                }
+                            }
                         }
                         el.J = 1;
                         while (proc->DISPLAY[el.J] != -1) {
@@ -2287,9 +2303,10 @@ namespace Cstar
                             il->PS = InterpLocal::PS::STKCHK;
                         } else {
                             el.H1 = CURPR->DISPLAY[el.IR.X] + el.IR.Y;
-                            for (int i = CURPR->BASE; i <= CURPR->BASE + CURPR->FORLEVEL - 1; i++) {
+                            for (int i = CURPR->BASE; i < CURPR->BASE + CURPR->FORLEVEL; i++) {
                                 if (il->SLOCATION[i] == el.H1) {
                                     il->S[CURPR->T] = il->S[i];
+                                    break;
                                 }
                             }
                         }
@@ -2297,8 +2314,8 @@ namespace Cstar
                     }
                     case 75: {
                         // [T] = group size (GROUPING)
-                        // [T-1] = processes
-                        // [T-2] = initial for index
+                        // [T-1] = upper processes limit
+                        // [T-2] = initial value for index
                         // [T-3] = index stk loc
                         CURPR->FORINDEX = CURPR->T - 2;
                         if (il->S[CURPR->T] <= 0) {

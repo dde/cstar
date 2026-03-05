@@ -31,7 +31,7 @@ namespace Cstar
     void DOSTATEMENT(BlockLocal *);
     void WHILESTATEMENT(BlockLocal *);
     void FORSTATEMENT(BlockLocal *);
-    void BLOCKSTATEMENT(BlockLocal *);
+    void BLOCKSTATEMENT(BlockLocal *, bool block = true);
     void FORALLSTATEMENT(BlockLocal *);
     void FORKSTATEMENT(BlockLocal *);
     void JOINSTATEMENT(BlockLocal *);
@@ -499,7 +499,7 @@ namespace Cstar
         FIXCONTS(LC - 1);
     }
 
-    void BLOCKSTATEMENT(BlockLocal *bl)
+    void BLOCKSTATEMENT(BlockLocal *bl, bool block /*=true*/)
     {
         TYPES CVT;
         ITEM X;
@@ -535,7 +535,8 @@ namespace Cstar
         BTAB[PRB].LASTPAR = Tx;
         BTAB[PRB].PSIZE = bl->DX;
         su = 0;
-        su[LSETBRACK] = true;
+        if (block)
+            su[LSETBRACK] = true;
         sv = DECLBEGSYS | STATBEGSYS | ASSIGNBEGSYS;
         TEST(su, sv, 3);
         INSYMBOL();
@@ -543,7 +544,8 @@ namespace Cstar
         EMIT1(19, BTAB[PRB].PSIZE - 1);
         TAB[PRT].ADR = LC;
         su = bl->FSYS;
-        su[RSETBRACK] = true;
+        if (block)
+            su[RSETBRACK] = true;
         //sv = DECLBEGSYS | STATBEGSYS | ASSIGNBEGSYS;
         TEST(sv, su, 101);
         //while (DECLBEGSYS[SY] || STATBEGSYS[SY] || ASSIGNBEGSYS[SY])
@@ -570,7 +572,8 @@ namespace Cstar
                     {
                         su = bl->FSYS;
                         su[SEMICOLON] = true;
-                        su[RSETBRACK] = true;
+                        if (block)
+                            su[RSETBRACK] = true;
                         STATEMENT(bl, su);
                     }
                 } else
@@ -581,11 +584,13 @@ namespace Cstar
             {
                 su = bl->FSYS;
                 su[SEMICOLON] = true;
-                su[RSETBRACK] = true;
+                if (block)
+                    su[RSETBRACK] = true;
                 STATEMENT(bl, su);
             }
             su = DECLBEGSYS | STATBEGSYS | ASSIGNBEGSYS;
-            su[RSETBRACK] = true;
+            if (block)
+                su[RSETBRACK] = true;
             TEST(su, bl->FSYS, 6);
         }
         BTAB[PRB].VSIZE = bl->DX;
@@ -594,12 +599,15 @@ namespace Cstar
         {
             LOCATION[LNUM] = LC;
         }
-        if (SY == RSETBRACK)
+        if (block)
         {
-            INSYMBOL();
-        } else
-        {
-            ERROR(7);
+            if (SY == RSETBRACK)
+            {
+                INSYMBOL();
+            } else
+            {
+                ERROR(7);
+            }
         }
         su = bl->FSYS;
         su[PERIOD] = true;
@@ -804,9 +812,73 @@ namespace Cstar
         int I;  // added local (unlikely intended to use global)
         int JUMPLC;
         SYMSET su;
+        std::vector<int> closure;
         bl->CREATEFLAG = false;
         EMIT(106);
         INSYMBOL();
+        if (SY == LBRACK)
+        {
+            INSYMBOL();
+
+            while (SY == IDENT)
+            {
+                I = LOC(bl, ID);
+                if (I != 0)
+                {
+                    if (!(TAB[I].TYP == INTS || TAB[I].TYP == CHARS || TAB[I].TYP == BOOLS))
+                    {
+                        su = 0;
+                        su[LPARENT] = true;
+                        su[LSETBRACK] = true;
+                        su[RBRACK] = true;
+                        su[COMMA] = true;
+                        SKIP(su, 40);
+                        continue;
+                    }
+                    else
+                    {
+                        closure.push_back(I);
+                        TAB[I].FORLEV += 1;
+                    }
+                }
+                else
+                {
+                    su = 0;
+                    su[LPARENT] = true;
+                    su[LSETBRACK] = true;
+                    su[RBRACK] = true;
+                    su[COMMA] = true;
+                    SKIP(su, 0);
+                }
+                INSYMBOL();
+                if (SY == COMMA)
+                    INSYMBOL();
+                else if (SY != RBRACK)
+                {
+                    su = 0;
+                    su[LPARENT] = true;
+                    su[LSETBRACK] = true;
+                    su[RBRACK] = true;
+                    su[IDENT] = true;
+                    SKIP(su, 12);
+                    break;
+                }
+            }
+            for (I = closure.size() - 1; I >= 0; I -= 1)
+            {
+                EMIT2(0, TAB[closure[I]].LEV, TAB[closure[I]].ADR);
+            }
+            if (SY != RBRACK)
+            {
+                su = 0;
+                su[LPARENT] = true;
+                su[LSETBRACK] = true;
+                su[IDENT] = true;
+                SKIP(su, 12);
+            }
+            else
+                INSYMBOL();
+        }
         if (SY == LPARENT)
         {
             INSYMBOL();
@@ -846,13 +918,13 @@ namespace Cstar
                 }
             }
         }
-        if (bl->CREATEFLAG)
-        {
-            EMIT1(67, 1);
-        } else
-        {
-            EMIT1(67, 0);
-        }
+        // if (bl->CREATEFLAG)
+        // {
+        EMIT2(67, closure.size(), (bl->CREATEFLAG) ? 1 : 0);
+        // } else
+        // {
+        //     EMIT1(67, 0);
+        // }
         JUMPLC = LC;
         EMIT1(7, 0);
         STATEMENT(bl, bl->FSYS);
@@ -861,6 +933,10 @@ namespace Cstar
         if (SYMCNT == 1)
         {
             LOCATION[LNUM] = LC;
+        }
+        for (I = 0; I < closure.size(); I += 1)
+        {
+            TAB[closure[I]].FORLEV -= 1;
         }
     }
 
