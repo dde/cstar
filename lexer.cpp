@@ -205,7 +205,7 @@ namespace Cstar
                     }
                     else
                     {
-                        if (FILENAME == "mpi.h")
+                        if (FILENAME == "mpi.h" || FILENAME == "MPI.H")
                             MPIMODE = true;
                         iStack[iStackIndex].fname = FILENAME;
                         iStack[iStackIndex].inc = INSRC;

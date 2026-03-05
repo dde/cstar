@@ -1862,7 +1862,7 @@ void showRealList(bool flg)
         il->RVALUE = (BUFREALTYPE *)calloc(BUFMAX + 1, sizeof(BUFREALTYPE));
         il->DATE = (BUFREALTYPE *)calloc(BUFMAX + 1, sizeof(BUFREALTYPE));
         INITCOMMANDS();
-        MPIMODE = false;
+        // MPIMODE = false;
         do
         {
             int cct = 0;

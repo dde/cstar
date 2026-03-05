@@ -229,6 +229,7 @@ namespace Cstar
         INCLUDEFLAG = false;
         FATALERROR = false;
         PROTOINDEX = -1;
+        MPIMODE = false;
         ENTER("              ", VARIABLE, NOTYP, 0);
         ENTER("FALSE         ", KONSTANT, BOOLS, 0);
         ENTER("TRUE          ", KONSTANT, BOOLS, 1);
