@@ -45,7 +45,7 @@
 #define BASESIZE 8 
 #define INITMAX 500 
 #define FILMAX 50 
-#define LIBMAX 59 
+#define LIBMAX 60
 
 #define MPISUCCESS   1 
 #define MPICOMMWORLD   1 

@@ -304,5 +304,6 @@ namespace Cstar
         LIBFINIT(57, "EXIT          ", 41);
         LIBFINIT(58, "DIV           ", 42);
         LIBFINIT(59, "RAND          ", 43);
+        LIBFINIT(60, "MEMCPY        ", 44);
     }
 }

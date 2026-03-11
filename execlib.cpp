@@ -239,7 +239,7 @@ namespace Cstar
         return RES;
     }
 
-    int CHKLEN(ExlibLocal *el, int STRPNT)
+    int CHKLENx(ExlibLocal *el, int STRPNT)
     {
         InterpLocal *il = el->il;
         if (STRPNT < 0 || STRPNT > STMAX)
@@ -264,6 +264,40 @@ namespace Cstar
             LEN++;
             I++;
             if (il->STARTMEM[I] != il->STARTMEM[STRPNT])
+            {
+                il->PS = InterpLocal::PS::STRCHK;
+                return -1;
+            }
+        }
+        return LEN;
+    }
+    int CHKLEN(ExlibLocal *el, int STRPNT)
+    {
+        int I;
+        int LEN;
+        int pid;
+        STYPE *stk, *stm;
+        InterpLocal *il = el->il;
+        if (STRPNT < 0 || STRPNT > STMAX || il->STARTMEM[STRPNT] <= 0)
+        {
+            il->PS = InterpLocal::PS::REFCHK;
+            return -1;
+        }
+        stk = il->S;
+        stm = il->STARTMEM;
+        pid = stm[STRPNT];
+        I = STRPNT;
+        LEN = 0;
+        while (stk[I] != 0)
+        {
+            if (stk[I] < CHARL || stk[I] > CHARH)
+            {
+                il->PS = InterpLocal::PS::STRCHK;
+                return -1;
+            }
+            LEN += 1;
+            I += 1;
+            if (stm[I] != pid)
             {
                 il->PS = InterpLocal::PS::STRCHK;
                 return -1;
@@ -326,7 +360,7 @@ namespace Cstar
             case 16:  // atan
                 il->RS[CURPR->T] = atan(il->RS[CURPR->T]);
                 break;
-            case 17:
+            case 17:  // malloc
                 xl.H1 = il->S[CURPR->T];
                 if (xl.H1 <= 0 || xl.H1 >= STMAX) {
                     il->S[CURPR->T] = 0;
@@ -739,6 +773,28 @@ namespace Cstar
                 rnd = std::rand();
 #endif
                 il->S[CURPR->T] = (int)(rnd % (NMAX + 1));
+                break;
+            case 44:
+                xl.H1 = il->S[CURPR->T - 2];  // to(1st parameter) for dir==1
+                xl.H2 = il->S[CURPR->T - 1];  // from (2nd parameter)
+                xl.H3 = il->S[CURPR->T];      // length (3rd)
+                CURPR->T = CURPR->T - 2;      // return destination buffer
+                if (xl.H3 <= 0)
+                    break;
+                if (xl.H1 + xl.H3 > STMAX) {
+                    il->PS = InterpLocal::PS::STKCHK;
+                    break;
+                }
+                if (il->STARTMEM[xl.H1 + xl.H3 - 1] != il->STARTMEM[xl.H1]) {
+                    il->PS = InterpLocal::PS::REFCHK;
+                    break;
+                }
+                for (xl.I = 0; xl.I < xl.H3; xl.I += 1, xl.H1 += 1, xl.H2 += 1)
+                {
+                    il->S[xl.H1] = il->S[xl.H2];
+                    if (il->S[xl.H1] == RTAG)
+                        il->RS[xl.H1] = il->RS[xl.H2];
+                }
                 break;
             case 50:
                 il->MPIINIT[CURPR->PROCESSOR] = true;
