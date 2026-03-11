@@ -926,10 +926,10 @@ namespace Cstar
                                     for (el.J = el.H1; el.J <= el.H1 + il->STKMAIN - 1; el.J++) {
                                         il->S[el.J] = 0;
                                         il->SLOCATION[el.J] = el.I;
-                                        il->RS[el.I] = 0.0;
+                                        il->RS[el.J] = 0.0;
                                     }
                                     for (el.J = el.H1; el.J <= el.H1 + BASESIZE - 1; el.J++) {
-                                        il->STARTMEM[el.I] = -il->STARTMEM[el.I];
+                                        il->STARTMEM[el.J] = -il->STARTMEM[el.J];
                                     }
                                     il->S[el.H1 + 1] = 0;
                                     il->S[el.H1 + 2] = 0;
