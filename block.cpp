@@ -1100,6 +1100,24 @@ namespace Cstar
         EMIT1(18, I);
         LASTP = BTAB[TAB[I].REF].LASTPAR;
         CP = LASTP - BTAB[TAB[I].REF].PARCNT;
+        if (SY == CULFTSY)
+        {
+            INSYMBOL();
+            sv = 0;
+            sv[CURGTSY] = true;
+            while (SY != CURGTSY)
+            {
+                if (SY != IDENT && SY != INTCON)
+                {
+                    SKIP(sv, 6);
+                    break;
+                }
+                INSYMBOL();
+                if (SY == COMMA)
+                    INSYMBOL();
+            }
+            INSYMBOL();
+        }
         if (SY == LPARENT)
             INSYMBOL();
         else

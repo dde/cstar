@@ -653,6 +653,11 @@ namespace Cstar
             {
                 SY = OUTSTR;
                 NEXTCH();
+                if (CH == '<')
+                {
+                    SY = CULFTSY;
+                    NEXTCH();
+                }
             } else
             {
                 SY = LSS;
@@ -720,6 +725,11 @@ namespace Cstar
             {
                 SY = INSTR;
                 NEXTCH();
+                if (CH == '>')
+                {
+                    SY = CURGTSY;
+                    NEXTCH();
+                }
             } else if (CH == ';')
             {
                 SY = GRSEMI;
