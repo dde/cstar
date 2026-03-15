@@ -502,7 +502,7 @@ namespace Cstar
         label1:
         while (CH == ' ')
             NEXTCH();
-        if (isalpha(CH) || CH == '#')
+        if (isalpha(CH) || CH == '#' || CH == '_')
         {
             nl.K = -1;
             strcpy(ID, "              ");
@@ -526,6 +526,7 @@ namespace Cstar
             while (isalnum(CH) || CH == '_');
             nl.I = 1;
             nl.J = NKW;
+            /*
             do
             {
                 nl.K = (nl.I + nl.J) / 2;
@@ -546,6 +547,23 @@ namespace Cstar
             {
                 SY = IDENT;
             }
+            */
+            do
+            {
+                nl.K = (nl.I + nl.J) / 2;
+                nl.E = strcmp(ID, KEY[nl.K]);
+                if (nl.E < 0)
+                {
+                    nl.J = nl.K - 1;
+                }
+                else if (nl.E > 0)
+                {
+                    nl.I = nl.K + 1;
+                }
+                else
+                    break;
+            } while (nl.I <= nl.J);
+            SY = (nl.E == 0) ? KSY[nl.K] : IDENT;
             if (MPIMODE && (NONMPISYS[SY] == 1))
             {
                 ERROR(145);
