@@ -20,7 +20,7 @@
 /*------THIS COMMENT MARKS THE E-ND OF THE MODIFIABLE CONSTANTS--------------*/
 
 
-#define NKW 35 
+#define NKW 36
 #define ALNG 14 
 #define OLDALNG 10 
 #define MESSAGELNG 25 

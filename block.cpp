@@ -1278,6 +1278,8 @@ namespace Cstar
                     VARIABLEDECLARATION(&bl);
                 else if (SY == INCLUDESY)
                     INCLUDEDIRECTIVE();
+                else if (SY == CUGLBSY)
+                    INSYMBOL();
                 su = DECLBEGSYS;
                 su[INCLUDESY] = true;
                 su[EOFSY] = true;

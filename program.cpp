@@ -86,6 +86,7 @@ namespace Cstar
         KSY[33] = UNSIGNEDSY;
         KSY[34] = VALUESY;
         KSY[35] = WHILESY;
+        KSY[36] = CUGLBSY;
         SPS['('] = LPARENT;
         SPS[')'] = RPARENT;
         SPS[','] = COMMA;
@@ -118,6 +119,7 @@ namespace Cstar
         DECLBEGSYS[TYPESY] = true;
         DECLBEGSYS[DEFINESY] = true;
         DECLBEGSYS[INCLUDESY] = true;
+        DECLBEGSYS[CUGLBSY] = true;
         // BLOCKBEGSYS = {IDENT, STRUCTSY, CONSTSY, SHORTSY, LONGSY, UNSIGNEDSY, TYPESY, DEFINESY}; // + TYPEBEGSYS;
         BLOCKBEGSYS = DECLBEGSYS;
         BLOCKBEGSYS[INCLUDESY] = false;
