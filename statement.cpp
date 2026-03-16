@@ -1171,7 +1171,7 @@ namespace Cstar
                         su[SEMICOLON] = true;
                         EXPRESSION(bl, su, X);
                         if (!(STANTYPS[X.TYP])) {
-                            ERROR(41);
+                            ERROR(40);
                         }
                         if (X.TYP == REALS)
                         {

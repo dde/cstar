@@ -54,7 +54,7 @@ namespace Cstar
     "String Empty             ",
     "Number of Parameters     ",
     "Type Error               ",
-    "Type Error               ",
+    "Architecture Already Set ",
     "Topology Not Found       ",
     "Type Error               ",
     "Variable or Constant     ",

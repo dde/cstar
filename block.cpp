@@ -277,10 +277,14 @@ namespace Cstar
         long J, K;
         OptionsLocal ol;
         SYMSET su;
+        struct gpu_dim
+        {
+            int gpu_size[4];
+        } gpu;
         ol.MYSY = INTCON;  // initial value only
         TOPOLOGY = SHAREDSY;
         TOPDIM = PMAX;
-        if (SY == IDENT && strcmp(ID, "ARCHITECTURE  ") == 0)
+        // if (SY == IDENT && strcmp(ID, "ARCHITECTURE  ") == 0)
         {
             strcpy(WORD[1], "SHARED        ");
             SYM[1] = SHAREDSY;
@@ -298,8 +302,9 @@ namespace Cstar
             SYM[7] = RINGSY;
             strcpy(WORD[8], "TORUS         ");
             SYM[8] = TORUSSY;
-            strcpy(WORD[9], "CLUSTER       ");
-            SYM[9] = CLUSTERSY;
+            strcpy(WORD[9], "GPU           ");
+            //SYM[9] = CLUSTERSY;
+            SYM[9] = GPUSY;
             INSYMBOL();
             if (SY == IDENT)
             {
@@ -323,6 +328,31 @@ namespace Cstar
                         } else
                         {
                             ERROR(43);
+                        }
+                        if (TOPOLOGY == GPUSY)
+                        {
+                            gpu.gpu_size[0] = C.I;
+                            for (J = 1; J < 4; J += 1)
+                            {
+                                if (SY == COMMA)
+                                {
+                                    INSYMBOL();
+                                } else
+                                {
+                                    ERROR(4);
+                                    break;
+                                }
+                                CONSTANT(bl, su, C);
+                                if (C.TP == INTS && C.I >= 0)
+                                {
+                                    gpu.gpu_size[J] = C.I;
+                                    TOPDIM *= C.I;
+                                } else
+                                {
+                                    ERROR(43);
+                                    break;
+                                }
+                            }
                         }
                         if (SY == RPARENT)
                         {
@@ -355,7 +385,7 @@ namespace Cstar
         switch (TOPOLOGY) {
             case SHAREDSY:
             case FULLCONNSY:
-            case CLUSTERSY:
+            //case CLUSTERSY:
                 HIGHESTPROCESSOR = TOPDIM - 1;
                 break;
             case HYPERCUBESY:
@@ -375,6 +405,9 @@ namespace Cstar
                 break;
             case MESH3SY:
                 HIGHESTPROCESSOR = TOPDIM * TOPDIM * TOPDIM - 1;
+                break;
+            case GPUSY:
+                HIGHESTPROCESSOR = TOPDIM - 1;
                 break;
             default:
                 break;
@@ -1217,6 +1250,7 @@ namespace Cstar
 //    int NUMWITH;
 //    int MAXNUMWITH;
 //    bool UNDEFMSGFLAG;
+        bool arch_set = false;
         BlockLocal bl;
         bl.FSYS = FSYS;
         bl.ISFUN = ISFUN;
@@ -1265,9 +1299,9 @@ namespace Cstar
         if (bl.LEVEL == 1)
         {
             su = DECLBEGSYS;
-            su[INCLUDESY] = true;
+            // su[INCLUDESY] = true;  redundant
             TEST(su, FSYS, 102);
-            OPTIONS(&bl);
+            //OPTIONS(&bl);
             do
             {
                 if (SY == DEFINESY)
@@ -1278,6 +1312,14 @@ namespace Cstar
                     VARIABLEDECLARATION(&bl);
                 else if (SY == INCLUDESY)
                     INCLUDEDIRECTIVE();
+                else if (SY == ARCHSY)
+                    if (arch_set)
+                        SKIP(su, 41);
+                    else
+                    {
+                        OPTIONS(&bl);
+                        arch_set = true;
+                    }
                 else if (SY == CUGLBSY)
                     INSYMBOL();
                 su = DECLBEGSYS;

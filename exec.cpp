@@ -227,7 +227,7 @@ namespace Cstar
                     rtn = 0;
                     break;
                 case FULLCONNSY:
-                case CLUSTERSY:
+                // case CLUSTERSY:
                     cl.DIST = 1;
                     break;
                 case HYPERCUBESY:
@@ -294,7 +294,7 @@ namespace Cstar
             cl.PATHLEN = 0;
             switch (TOPOLOGY) {
                 case FULLCONNSY:
-                case CLUSTERSY:
+                // case CLUSTERSY:
                     cl.PATH[1] = DEST;
                     cl.PATHLEN = 1;
                     break;

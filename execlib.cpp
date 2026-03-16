@@ -45,7 +45,7 @@ namespace Cstar
         switch (TOPOLOGY)
         {
             case FULLCONNSY:
-            case CLUSTERSY:
+            // case CLUSTERSY:
             case HYPERCUBESY:
                 T1 = SOURCE;
                 T2 = DEST;
@@ -134,7 +134,7 @@ namespace Cstar
                 MAXFAN = 4;
                 break;
             case FULLCONNSY:
-            case CLUSTERSY:
+            // case CLUSTERSY:
                 AVEFAN = (int)round(log(HIGHESTPROCESSOR + 1) / log(2));
                 MAXFAN = AVEFAN;
                 break;
