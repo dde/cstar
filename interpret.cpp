@@ -1724,7 +1724,6 @@ void showRealList(bool flg)
             std::cin >> XR;
             XR = XR + 52379.0;
         }
-        fprintf(STDOUT, "sizeof PROCTAB %lu\n", sizeof(InterpLocal::PROCTAB));
         for (int I = 0; I <= PMAX; I++)  // init all PROCTAB elements
         {
             il->PROCTAB[I].STATUS = InterpLocal::PROCTAB::STATUS::NEVERUSED;
