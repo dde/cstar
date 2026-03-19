@@ -1,12 +1,9 @@
 //
 // Created by Dan Evans on 2/6/24.
 //
-#include <cstdio>
-#include <cstring>
 #include "cs_global.h"
 #include "cs_compile.h"
 #include "cs_interpret.h"
-#include "cs_block.h"
 namespace Cstar
 {
     const char *lookupSym(int, int);
