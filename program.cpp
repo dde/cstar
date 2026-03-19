@@ -222,7 +222,6 @@ namespace Cstar
         EOFCOUNT = 0;
         Tx = -1;
         A = 0;
-        B = 1;    // index to BTAB
         SX = 0;
         C2 = 0;
         C = 0;
@@ -262,10 +261,13 @@ namespace Cstar
         ENTER("SEQOFF        ", PROZEDURE, NOTYP, 10);
         ENTER("SEQON         ", PROZEDURE, NOTYP, 11);
         ENTER("              ", PROZEDURE, NOTYP, 0);
-        BTAB[1].LAST = Tx;
-        BTAB[1].LASTPAR = 1;
-        BTAB[1].PSIZE = 0;
-        BTAB[1].VSIZE = 0;
+        BTAB.push_back(BTABREC());
+        BTAB.push_back(BTABREC(Tx, 1, 0, 0));
+        Bx = BTAB.size() - 1;    // index to BTAB
+        // BTAB[1].LAST = Tx;
+        // BTAB[1].LASTPAR = 1;
+        // BTAB[1].PSIZE = 0;
+        // BTAB[1].VSIZE = 0;
         LIBFINIT(1, "ABS           ", 1);
         LIBFINIT(2, "FABS          ", 2);
         LIBFINIT(3, "CEIL          ", 9);

@@ -41,6 +41,7 @@ namespace Cstar
 
     void ENTERBLOCK()
     {
+        /*
         if (B == BMAX)
         {
             FATAL(2);
@@ -50,6 +51,9 @@ namespace Cstar
             BTAB[B].LAST = 0;
             BTAB[B].LASTPAR = 0;
         }
+        */
+        Bx = BTAB.size();
+        BTAB.push_back(BTABREC());
     }
     void SKIP(SYMSET FSYS, int N) {
         ERROR(N);
@@ -277,13 +281,10 @@ namespace Cstar
         long J, K;
         OptionsLocal ol;
         SYMSET su;
-        struct gpu_dim
-        {
-            int gpu_size[4];
-        } gpu;
+
         ol.MYSY = INTCON;  // initial value only
-        TOPOLOGY = SHAREDSY;
-        TOPDIM = PMAX;
+        //TOPOLOGY = SHAREDSY;
+        //TOPDIM = PMAX;
         // if (SY == IDENT && strcmp(ID, "ARCHITECTURE  ") == 0)
         {
             strcpy(WORD[1], "SHARED        ");
@@ -331,7 +332,7 @@ namespace Cstar
                         }
                         if (TOPOLOGY == GPUSY)
                         {
-                            gpu.gpu_size[0] = C.I;
+                            arch.gpu_size[0] = C.I;
                             for (J = 1; J < 4; J += 1)
                             {
                                 if (SY == COMMA)
@@ -345,7 +346,7 @@ namespace Cstar
                                 CONSTANT(bl, su, C);
                                 if (C.TP == INTS && C.I >= 0)
                                 {
-                                    gpu.gpu_size[J] = C.I;
+                                    arch.gpu_size[J] = C.I;
                                     TOPDIM *= C.I;
                                 } else
                                 {
@@ -408,6 +409,7 @@ namespace Cstar
                 break;
             case GPUSY:
                 HIGHESTPROCESSOR = TOPDIM - 1;
+                TOPOLOGY = SHAREDSY;  // avoid memory restrictions
                 break;
             default:
                 break;
@@ -1243,6 +1245,41 @@ namespace Cstar
         if (TAB[I].LEV < bl->LEVEL && TAB[I].ADR >= 0)
             EMIT2(3, TAB[I].LEV, bl->LEVEL);
     }
+    void gpu_kernel(BlockLocal *bl) {
+        int ix, tpx;
+        TABREC *tbp;
+        ALFA lcls[4];
+        strcpy(lcls[0], "GRIDDIM       ");
+        strcpy(lcls[1], "BLOCKIDX      ");
+        strcpy(lcls[2], "BLOCKDIM      ");
+        strcpy(lcls[3], "THREADIDX     ");
+        for (ix = 0; ix < 4; ix += 1)
+        {
+            tpx = LOC(bl, lcls[ix]);  // find the struct type
+            if (tpx <= 0)
+                ERROR(0);
+            ENTER(bl, lcls[ix], VARIABLE);
+            tbp = &TAB[Tx];
+            //T0 = Tx + 1;
+            tbp->TYP = RECS;
+            tbp->REF = TAB[tpx].REF;
+            tbp->LEV = bl->LEVEL;
+            tbp->ADR = bl->DX;
+            tbp->NORMAL = true;
+            tbp->SIZE = TAB[tpx].ADR;
+            bl->DX += TAB[tpx].ADR;
+            tbp->PNTPARAM = false;
+            tbp->FREF = 0;
+            tbp->FORLEV = 0;
+            tbp->PNTPARAM = false;
+        }
+        /*
+        t0 = LOC(bl, "GRIDDIM       ");
+        t0 = LOC(bl, "BLOCKDIM      ");
+        t0 = LOC(bl, "BLOCKIDX      ");
+        t0 = LOC(bl, "THREADIDX     ");
+        */
+    }
     void BLOCK(SYMSET FSYS, bool ISFUN, int LEVEL, int PRT)
     {
 //    int DX;
@@ -1250,7 +1287,6 @@ namespace Cstar
 //    int NUMWITH;
 //    int MAXNUMWITH;
 //    bool UNDEFMSGFLAG;
-        bool arch_set = false;
         BlockLocal bl;
         bl.FSYS = FSYS;
         bl.ISFUN = ISFUN;
@@ -1264,6 +1300,8 @@ namespace Cstar
             FATAL(5);
         if (bl.LEVEL > 2)
             ERROR(122);
+        if (arch.max_blk_lev < bl.LEVEL)
+            arch.max_blk_lev = bl.LEVEL;
         bl.NUMWITH = 0;
         bl.MAXNUMWITH = 0;
         bl.UNDEFMSGFLAG = true;
@@ -1276,8 +1314,8 @@ namespace Cstar
         bl.CREATEFLAG = false;
         bl.ISDECLARATION = false;
         ENTERBLOCK();
-        DISPLAY[bl.LEVEL] = B;
-        bl.PRB = B;
+        DISPLAY[bl.LEVEL] = Bx;
+        bl.PRB = Bx;
         if (bl.LEVEL == 1)
         {
             TAB[PRT].TYP = NOTYP;
@@ -1293,15 +1331,25 @@ namespace Cstar
         {
             PARAMETERLIST(&bl);
         }
+        BTABREC *btp;
+        btp = &BTAB[bl.PRB];
+        btp->LASTPAR = Tx;
+        btp->PSIZE = bl.DX;
+        btp->PARCNT = bl.PCNT;
+        /*
         BTAB[bl.PRB].LASTPAR = Tx;
         BTAB[bl.PRB].PSIZE = bl.DX;
         BTAB[bl.PRB].PARCNT = bl.PCNT;
+        */
         if (bl.LEVEL == 1)
         {
             su = DECLBEGSYS;
             // su[INCLUDESY] = true;  redundant
             TEST(su, FSYS, 102);
             //OPTIONS(&bl);
+            TOPOLOGY = SHAREDSY;
+            TOPDIM = PMAX;
+            HIGHESTPROCESSOR = TOPDIM - 1;
             do
             {
                 if (SY == DEFINESY)
@@ -1313,17 +1361,22 @@ namespace Cstar
                 else if (SY == INCLUDESY)
                     INCLUDEDIRECTIVE();
                 else if (SY == ARCHSY)
-                    if (arch_set)
+                {
+                    if (arch.arch_set || arch.max_blk_lev > 1)
                         SKIP(su, 41);
                     else
                     {
                         OPTIONS(&bl);
-                        arch_set = true;
+                        arch.arch_set = true;
                     }
+                }
                 else if (SY == CUGLBSY)
+                {
                     INSYMBOL();
+                    arch.gpu_kernel = true;
+                }
                 su = DECLBEGSYS;
-                su[INCLUDESY] = true;
+                // su[INCLUDESY] = true;
                 su[EOFSY] = true;
                 TEST(su, FSYS, 6);
             }
@@ -1340,6 +1393,11 @@ namespace Cstar
                 sv[RSETBRACK] = true;
                 TEST(su, sv, 101);
                 bl.CREATEFLAG = false;
+                if (arch.gpu_kernel)
+                {
+                    gpu_kernel(&bl);
+                    arch.gpu_kernel = false;
+                }
                 while (DECLBEGSYS[SY] || STATBEGSYS[SY] || ASSIGNBEGSYS[SY])
                 {
                     if (SY == DEFINESY)

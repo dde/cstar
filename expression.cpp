@@ -1448,7 +1448,6 @@ void GETLIST(BlockLocal *bl, TYPES TP) {
         SKIP(su, 106);
     }
 }
-
 void PROCDECLARATION(BlockLocal *bl) {
     SYMSET su;
     bool ISFUN = false;
@@ -1458,7 +1457,8 @@ void PROCDECLARATION(BlockLocal *bl) {
         ERROR(2);
         strcpy(ID, "              ");
     }
-
+    if (strcmp(ID, "VECTORADD     ") == 0)
+        fprintf(STDOUT, "%s\n", ID);
     ENTER(bl, ID, PROZEDURE);
     int T0 = Tx;
 

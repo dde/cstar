@@ -528,8 +528,8 @@ namespace Cstar
         bl->NUMWITH = 0;
         bl->MAXNUMWITH = 0;
         ENTERBLOCK();
-        DISPLAY[bl->LEVEL] = B;
-        PRB = B;
+        DISPLAY[bl->LEVEL] = Bx;
+        PRB = Bx;
         TAB[PRT].TYP = NOTYP;
         TAB[PRT].REF = PRB;
         BTAB[PRB].LASTPAR = Tx;

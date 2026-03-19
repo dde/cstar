@@ -1,11 +1,11 @@
 //
 // Created by Dan Evans on 1/7/24.
 //
+#ifndef CSTAR_CS_COMPILE_H
+#define CSTAR_CS_COMPILE_H
 #include <string>
 #include <bitset>
 
-#ifndef CSTAR_CS_COMPILE_H
-#define CSTAR_CS_COMPILE_H
 #ifdef EXPORT_CS_COMPILE
 #define COMPILE_CS_EXPORT
 #else
@@ -24,7 +24,7 @@ namespace Cstar
     COMPILE_CS_EXPORT int LC;
     COMPILE_CS_EXPORT int LL, LL2;
     COMPILE_CS_EXPORT int A;  // index to ATAB source local?
-    COMPILE_CS_EXPORT int B;  // index to BTAB source local?
+    COMPILE_CS_EXPORT int Bx;  // index to BTAB source local?
     COMPILE_CS_EXPORT int C;  // index to CTAB source local?
     COMPILE_CS_EXPORT int Tx;  // index to TAB source local?
     COMPILE_CS_EXPORT int ERRPOS;
@@ -88,6 +88,8 @@ namespace Cstar
     struct BTABREC
     {
         int LAST, LASTPAR, PSIZE, VSIZE, PARCNT;
+        BTABREC() : LAST(0), LASTPAR(0), PSIZE(0), VSIZE(0), PARCNT(0) {};
+        BTABREC(int lt, int lp, int ps, int vs) : LAST(lt), LASTPAR(lp), PSIZE(ps), VSIZE(vs), PARCNT(0) {};
     };
 
     struct CTABREC
@@ -221,7 +223,7 @@ namespace Cstar
 #endif
 
 #ifdef EXPORT_CS_COMPILE
-    COMPILE_CS_EXPORT std::vector<BTABREC> BTAB(BMAX + 1);
+    COMPILE_CS_EXPORT std::vector<BTABREC> BTAB /*(BMAX + 1)*/ ;
 #else
     COMPILE_CS_EXPORT std::vector<BTABREC> BTAB;
 #endif
@@ -242,5 +244,19 @@ namespace Cstar
     COMPILE_CS_EXPORT INDEX TOPDIM;
     COMPILE_CS_EXPORT INDEX PROTOREF;
     COMPILE_CS_EXPORT ITEM RETURNTYPE;
+    struct arch_global
+    {
+        int gpu_size[4];  // blocks/grid, block rows, threads/block, thread rows
+        int max_blk_lev;  // if level > 1, a function has been compile
+        int blkprm;       // block parm passed in CUDA prefix
+        int thdprm;      // thread parm passed in CUDA prefix
+        bool arch_set;    // architecture has been set if true
+        bool gpu_kernel;  // compiling a GPU kernel if true
+    };
+#ifdef EXPORT_CS_COMPILE
+    COMPILE_CS_EXPORT struct arch_global arch = {{0, 0, 0, -0}, 0, false, false};
+#else
+    COMPILE_CS_EXPORT struct arch_global arch;
+#endif
 }
 #endif //CSTAR_CS_COMPILE_H
