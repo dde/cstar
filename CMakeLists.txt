@@ -28,7 +28,7 @@ set(SOURCE_FILES lexer.cpp
         displays.cpp)
 set(COMPILE_FILES compile.cpp
         block.cpp
-        displayc.cpp
+        displays.cpp
         lexer.cpp
         errors.cpp
         statement.cpp
