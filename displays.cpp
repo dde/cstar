@@ -10,68 +10,75 @@
 namespace Cstar
 {
     const char *lookupSym(int, int);
+    void lookupSymx();
     const char *arrayName(int);
-    const char *opcodes[115] = {"pushstkloc", // 0
+    const char *opcodes[116] = {"pushstkloc", // 0
                                        "pushstklocri", "",
                                        "movdspbas", "clrchnoseq", "unhookprcr",
                                        "noop",
                                        "jmpseqon", "pushsys",
                                        "mpiinit",
-                                       "jmp",
+                                       "jmp", // 10
                                        "popjmpfalse",
                                        "",
                                        "getstkfrm1", "pushfm[T]",
                                        "addint", "", "",
                                        "getstkfrm2",
                                        "callblk",
-                                       "swap", "pushaelstkloc",
+                                       "swap", // 20
+                                       "pushaelstkloc",
                                        "pushpid",
                                        "cpystk[T]>[T-1]",
                                        "pushimm",
                                        "", "cnvi2r", "cin",
                                        "outstr",
                                        "outint",
-                                       "setwidth/prec", "end",
+                                       "setwidth/prec", // 30
+                                       "end",
                                        "returnv",
                                        "return",
                                        "pushind",
                                        "not", "negate",
                                        "outreal",
-                                       "stindstk", "", "", "",
-                                       "", "", "",
+                                       "stindstk", "",
+                                       "", // 40
+                                       "", "", "", "",
                                        "cmpeq",
                                        "cmpne",
                                        "cmplt",
                                        "cmple",
                                        "cmpgt",
-                                       "cmpge",
+                                       "cmpge",  // 50
                                        "or",
                                        "add",
                                        "sub", "", "",
                                        "and",
                                        "times",
                                        "intdiv",
-                                       "intmod","", "", "",
+                                       "intmod",
+                                       "", // 60
+                                       "", "",
                                        "outendl", "recvchvar", "recvch[var]", "send",
                                        "fork", "",
                                        "procend --fork",
-                                       "procend --forall",
+                                       "procend --forall",  // 70
                                        "recvch[T]", "",
-                                       "pushprcr",
+                                       "pushclsr",
                                        "forall",
                                        "forgrpT-2gtT-1jmp",
                                        "incrT-2ltT-1jmp",
                                        "",
-                                       "wakepar", "findprctb",
-                                       "", "", "initarr", "zeroarr", "dup", "join", "testvar",
+                                       "wakepar", "findprctb", "", // 80
+                                       "", "initarr", "zeroarr", "dup", "join", "testvar",
                                        "pushrconfmtbl", "",
                                        "noswitchon",
-                                       "noswitchoff", "", "sendri", "",
+                                       "noswitchoff",  // 90
+                                       "", "sendri", "",
                                        "tststrm",
                                        "tststrmind",
                                        "tststrmstkind",
                                        "", "copymsg", "",
-                                       "",
+                                       "",  // 100
                                        "lock[T]", "unlock[T]", "",
                                        "ltincr[T-1]jmp",
                                        "",
@@ -79,7 +86,8 @@ namespace Cstar
                                        "seqon",
                                        "incr[T]imm",
                                        "decr[T]imm",
-                                       "add3", "pop", "condrel[T]", "cpymsg", ""
+                                       "add3",  // 110
+                                       "pop", "condrel[T]", "cpymsg", "", ""
 
     };
     static const char *types[] = {"NOTYP", "REALS", "INTS", "BOOLS", "CHARS", "ARRAY", "CHANS", "RECS",
@@ -89,9 +97,9 @@ namespace Cstar
     static const char *priority[] = {"LOW", "HIGH"};
     static const char *objects[] = {"KONSTANT", "VARIABLE", "TYPE1", "PROZEDURE",
                                     "FUNKTION", "COMPONENT", "STRUCTAG"};
-    static const int FuncType = 4;
-    static const int ProcType = 3;
-    static const int VarType = 1;
+    static const int FuncType = (int)FUNKTION;
+    static const int ProcType = (int)PROZEDURE;
+    static const int VarType = (int)VARIABLE;
     static const char *nosym = "nosym";
     static const char *prepost[] = {"pre", "post"};
     static const char *sysname[] = {"", "", "", "", "", "", "", "", "", "",
@@ -106,6 +114,12 @@ namespace Cstar
         int functionVarFirst;
         int functionVarLast;
     } curExec = {0, 0, 0, 0};
+    static struct FuncLocation
+    {
+        int tabLoc;
+        int codeLoc;
+    } *funcLocations = nullptr;
+    static int funcMax;
     const char *nameState(enum PROCESSDESCRIPTOR::STATE st)
     {
         return states[st];
@@ -118,12 +132,88 @@ namespace Cstar
     {
         return status[st];
     }
+    void lookupSymx()
+    {
+        int ix, ct, lst;
+        funcMax = 0;
+        for (ix = Tx; ix > 0; --ix)
+        {
+            if ((TAB[ix].OBJ == FuncType || TAB[ix].OBJ == ProcType) && TAB[ix].ADR > 0)
+                funcMax += 1;
+            if (TAB[ix].NAME[0] == ' ')
+                break;
+        }
+        funcLocations = static_cast<FuncLocation *>(calloc(funcMax + 1, sizeof(FuncLocation *)));
+        funcLocations[0].tabLoc = funcMax;
+        lst = 0;
+        for (ix = Tx; ix > 0; --ix)
+        {
+            if ((TAB[ix].OBJ == FuncType || TAB[ix].OBJ == ProcType) && TAB[ix].ADR > 0)
+            {
+                ct = lst;
+                while (ct >= 0)
+                {
+                    if (TAB[ix].ADR >= funcLocations[ct].codeLoc)
+                        break;
+                    funcLocations[ct + 1] = funcLocations[ct];
+                    ct -= 1;
+                }
+                ct += 1;
+                funcLocations[ct].tabLoc = ix;
+                funcLocations[ct].codeLoc = TAB[ix].ADR;
+                lst += 1;
+            }
+            if (TAB[ix].NAME[0] == ' ')
+                break;
+        }
+    }
+    const char *symtabSearch(int symtabIndex, int X, int Y)
+    {
+        int blockTableIndex;
+        int varLast;
+        blockTableIndex = TAB[symtabIndex].REF;
+        varLast = BTAB[blockTableIndex].LAST;
+        while (varLast != 0)
+        {
+            if (TAB[varLast].ADR == Y && TAB[varLast].LEV == X)
+                return TAB[varLast].NAME;
+            varLast = TAB[varLast].LINK;
+        }
+        return nosym;
+    }
+    const char *lookupSym(int pc, int X, int Y)
+    {
+        int ix;
+        const char *rtn = nosym;
+        ix = 2;
+        while (ix <= funcLocations[0].tabLoc)
+        {
+            if (pc < funcLocations[ix].codeLoc)
+            {
+                rtn = symtabSearch(funcLocations[ix - 1].tabLoc, X, Y);
+                break;
+            }
+            ix += 1;
+        }
+        return rtn;
+    }
+    const char *arrayName(int ref)
+    {
+        int ix;
+        for (ix = Tx; ix >= 0; --ix)
+        {
+            if (TAB[ix].TYP == ARRAYS && TAB[ix].REF == ref)
+                return TAB[ix].NAME;
+        }
+        return nosym;
+    }
     void dumpInst(int ix)
     {
         int F, X, Y;
         const char *op;
         char ibuf[80];
-
+        if (nullptr == funcLocations)
+            lookupSymx();
         F = CODE[ix].F;
         X = CODE[ix].X;
         Y = CODE[ix].Y;
@@ -133,7 +223,7 @@ namespace Cstar
             case 0:
             case 1:
                 snprintf(ibuf, sizeof ibuf, "%4d: %3d %d,%d %s %s\n", ix,
-                         F, X, Y, op, lookupSym(X, Y));
+                         F, X, Y, op, lookupSym(ix, X, Y));
                 break;
             case 8:
                 snprintf(ibuf, sizeof ibuf, "%4d: %3d %d,%d %s %s\n", ix,
@@ -148,9 +238,10 @@ namespace Cstar
                 snprintf(ibuf, sizeof ibuf, "%4d: %3d %d,%d %s %s\n", ix,
                          F, X, Y, op, TAB[Y].NAME);
                 curExec.functionSymtabIndex = Y;
-                curExec.blockTableIndex = TAB[Y].REF;
-                curExec.functionVarFirst = BTAB[curExec.blockTableIndex].LAST;
-                curExec.functionVarLast = BTAB[curExec.blockTableIndex].LASTPAR;
+                // curExec.blockTableIndex = TAB[Y].REF;
+                // curExec.functionVarFirst = BTAB[curExec.blockTableIndex].LASTPAR + 1;
+                // curExec.functionVarLast = (BTAB[curExec.blockTableIndex].LAST != 0) ?
+                //     BTAB[curExec.blockTableIndex].LAST - 1 : BTAB[curExec.blockTableIndex].LASTPAR;
                 break;
             case 19:
                 snprintf(ibuf, sizeof ibuf, "%4d: %3d %d,%d %s %s\n", ix,
@@ -175,7 +266,7 @@ namespace Cstar
                 break;
             case 64:
                 snprintf(ibuf, sizeof ibuf, "%4d: %3d %d,%d %s %s\n", ix,
-                         F, X, Y, op, lookupSym(X, Y));
+                         F, X, Y, op, lookupSym(ix, X, Y));
                 break;
             case 104:
                 snprintf(ibuf, sizeof ibuf, "%4d: %3d %d,%d %s %d%s\n", ix,
@@ -206,9 +297,20 @@ namespace Cstar
     {
         int ix;
         int line = 1;
+        FuncLocation *fp;
         for (ix = 0; ix < LC; ++ix)
         {
            dumpLInst(ix, &line);
+        }
+        if (nullptr != funcLocations)
+        {
+            fprintf(STDOUT, "Function       Code Location\n");
+            for (ix = 1; ix <= funcLocations[0].tabLoc; ++ix)
+            {
+                fp = &funcLocations[ix];
+                fprintf(STDOUT, "%s %5d\n", TAB[fp->tabLoc].NAME, fp->codeLoc);
+            }
+            free(funcLocations);
         }
     }
     void dumpSymbols()
@@ -265,7 +367,7 @@ namespace Cstar
             ix += 1;
         }
         fprintf(STDOUT, "Index  LAST LASTPAR PSIZE VSIZE PARCNT\n");
-        for (ix = 0; ix <= B; ++ix)
+        for (ix = 0; ix <= Bx; ++ix)
         {
             fprintf(STDOUT, "%5d %5d %7d %5d %5d %6d\n", ix,
                     BTAB[ix].LAST,
@@ -274,7 +376,7 @@ namespace Cstar
                     BTAB[ix].VSIZE,
                     BTAB[ix].PARCNT);
         }
-        for (ix = B; ix >= 1; --ix)
+        for (ix = Bx; ix >= 1; --ix)
         {
             lst = BTAB[ix].LAST;
             fprintf(STDOUT, "block %d declares\n", ix);
@@ -539,58 +641,5 @@ namespace Cstar
         }
         while (act != nullptr && act != acphead);
     }
-    const char *lookupSym(int lev, int adr)
-    {
-        int ix, blev;
-//        for (ix = Tx; ix >= 0; --ix)
-//        {
-//            if (TAB[ix].ADR == adr && TAB[ix].LEV == lev)
-//                return TAB[ix].NAME;
-//        }
-//        for (ix = curExec.functionVarFirst; ix >= curExec.functionVarLast; --ix)
-//        {
-//            if (TAB[ix].ADR == adr && TAB[ix].LEV == lev)
-//                return TAB[ix].NAME;
-//        }
-        if (lev == 0)
-            return nosym;
-        if (lev == 1)  // global
-        {
-            ix = 1;
-            while (ix <= Tx)
-            {
-                if (lev == TAB[ix].LEV && adr == TAB[ix].ADR)
-                    return TAB[ix].NAME;
-                ix += 1;
-            }
-        }
-        else
-        {
-            ix = curExec.functionSymtabIndex + 1;
-            while (ix <= Tx && TAB[ix].TYP != FuncType && TAB[ix].TYP != ProcType)
-            {
-                if (lev == TAB[ix].LEV && adr == TAB[ix].ADR)
-                    return TAB[ix].NAME;
-                ix += 1;
-            }
-        }
-//        ix = BTAB[lev].LAST;
-//        while (ix != 0)
-//        {
-//            if (TAB[ix].ADR == adr)
-//                return TAB[ix].NAME;
-//            ix = TAB[ix].LINK;
-//        }
-        return nosym;
-    }
-    const char *arrayName(int ref)
-    {
-        int ix;
-        for (ix = Tx; ix >= 0; --ix)
-        {
-            if (TAB[ix].TYP == ARRAYS && TAB[ix].REF == ref)
-                return TAB[ix].NAME;
-        }
-        return nosym;
-    }
+
 }
