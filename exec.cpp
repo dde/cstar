@@ -38,7 +38,7 @@ namespace Cstar
     extern void dumpDeadlock(InterpLocal *il);
     extern const char *nameState(enum PROCESSDESCRIPTOR::STATE);
     extern const char *nameRdstatus(enum PROCESSDESCRIPTOR::READSTATUS);
-    extern const char *prcsrStatus(enum InterpLocal::PROCTAB::STATUS st);
+    extern const char *prcsrStatus(enum PROCTAB::STATUS st);
     extern const char *lookupSym(int, int);
     extern void showInstTrace(bool);
     extern int GETLNUM(int);
@@ -401,7 +401,7 @@ namespace Cstar
     }
     void TIMEINC(InterpLocal *il, int UNITS, const char *trc) {
         float STEP;
-        struct InterpLocal::PROCTAB *ptab;
+        PROCTAB *ptab;
         PRD *proc;
         proc = il->CURPR;
         ptab = &il->PROCTAB[proc->PROCESSOR];
@@ -424,7 +424,7 @@ namespace Cstar
         bool DONE, DEADLOCK;
         ACTPNT PREV;
         int COUNT;
-        struct InterpLocal::PROCTAB *ptab;
+        PROCTAB *ptab;
         PRD *proc;
         PREV = il->ACPCUR;
         il->ACPCUR = il->ACPCUR->NEXT;
@@ -559,7 +559,7 @@ namespace Cstar
 //        std::vector<int> STACK(STACKSIZE);
         PROCPNT CURPR = il->CURPR;
         PROCPNT proc;
-        struct InterpLocal::PROCTAB *prtb;
+        PROCTAB *prtb;
         struct InterpLocal::Channel *chan;
         // --- debugging ---
 
@@ -647,7 +647,7 @@ namespace Cstar
                     }
                     for (int i = il->FIRSTPROC; i <= il->LASTPROC; i++) {
                         il->USAGE = (float)(il->PROCTAB[i].PROTIME / il->PROSTEP);
-                        if (il->PROCTAB[i].STATUS == InterpLocal::PROCTAB::STATUS::NEVERUSED) {
+                        if (il->PROCTAB[i].STATUS == PROCTAB::STATUS::NEVERUSED) {
                             CH = ' ';
                         } else if (il->USAGE < 0.25) {
                             CH = '.';
@@ -952,10 +952,10 @@ namespace Cstar
                                 proc->SEQON = true;
                                 proc->GROUPREP = false;
                                 proc->PROCESSOR = el.I;
-                                if (il->PROCTAB[el.I].STATUS == InterpLocal::PROCTAB::STATUS::NEVERUSED) {
+                                if (il->PROCTAB[el.I].STATUS == PROCTAB::STATUS::NEVERUSED) {
                                     il->USEDPROCS++;
                                 }
-                                il->PROCTAB[el.I].STATUS = InterpLocal::PROCTAB::STATUS::FULL;
+                                il->PROCTAB[el.I].STATUS = PROCTAB::STATUS::FULL;
                                 il->PROCTAB[el.I].NUMPROC++;
                                 el.J = 1;
                                 while (proc->DISPLAY[el.J] != -1) {
@@ -2108,10 +2108,10 @@ namespace Cstar
                         if (proc->PROCESSOR > HIGHESTPROCESSOR || proc->PROCESSOR < 0) {
                             il->PS = InterpLocal::PS::CPUCHK;
                         } else {
-                            if (il->PROCTAB[proc->PROCESSOR].STATUS == InterpLocal::PROCTAB::STATUS::NEVERUSED) {
+                            if (il->PROCTAB[proc->PROCESSOR].STATUS == PROCTAB::STATUS::NEVERUSED) {
                                 il->USEDPROCS += 1;
                             }
-                            il->PROCTAB[proc->PROCESSOR].STATUS = InterpLocal::PROCTAB::STATUS::FULL;
+                            il->PROCTAB[proc->PROCESSOR].STATUS = PROCTAB::STATUS::FULL;
                             il->PROCTAB[proc->PROCESSOR].NUMPROC += 1;
                         }
                         CURPR->T = CURPR->T - 1;
@@ -2292,7 +2292,7 @@ namespace Cstar
                             prtb->NUMPROC -= 1;
                             prtb->RUNPROC = nullptr;
                             if (prtb->NUMPROC == 0) {
-                                prtb->STATUS = InterpLocal::PROCTAB::STATUS::EMPTY;
+                                prtb->STATUS = PROCTAB::STATUS::EMPTY;
                             }
                         }
                         break;
@@ -2387,21 +2387,21 @@ namespace Cstar
                                 // with PROCTAB[I]
                                 switch (prtb->STATUS)
                                 {
-                                    case InterpLocal::PROCTAB::STATUS::EMPTY:
+                                    case PROCTAB::STATUS::EMPTY:
                                         el.B1 = true;
                                         break;
-                                    case InterpLocal::PROCTAB::STATUS::NEVERUSED:
+                                    case PROCTAB::STATUS::NEVERUSED:
                                         if (el.J == -1)
                                             el.J = el.I;
                                         break;
-                                    case InterpLocal::PROCTAB::STATUS::FULL:
+                                    case PROCTAB::STATUS::FULL:
                                         if (prtb->NUMPROC < el.H1)
                                         {
                                             el.H2 = el.I;
                                             el.H1 = prtb->NUMPROC;
                                         }
                                         break;
-                                    case InterpLocal::PROCTAB::STATUS::RESERVED:
+                                    case PROCTAB::STATUS::RESERVED:
                                         if (prtb->NUMPROC + 1 < el.H1)  // +1 fixed dde
                                         {
                                             el.H2 = el.I;
@@ -2423,7 +2423,7 @@ namespace Cstar
                                 il->S[CURPR->T] = el.H2;
                             //fprintf(STDOUT, "find processsor %d status %s\n", il->S[CURPR->T],
                             //        prcsrStatus(il->PROCTAB[il->S[CURPR->T]].STATUS));
-                            il->PROCTAB[il->S[CURPR->T]].STATUS = InterpLocal::PROCTAB::STATUS::RESERVED;
+                            il->PROCTAB[il->S[CURPR->T]].STATUS = PROCTAB::STATUS::RESERVED;
                         }
                         break;
                     }

@@ -100,6 +100,18 @@ namespace Cstar
         bool SEQON;
         bool GROUPREP;
     } PROCESSDESCRIPTOR;
+    typedef struct PROCTAB {
+        double VIRTIME;
+        double BRKTIME;
+        double PROTIME;
+        double STARTTIME;
+        BUSYPNT BUSYLIST;
+        PROCPNT RUNPROC;
+        float SPEED;
+        int NUMPROC;
+        enum STATUS {NEVERUSED, EMPTY, RESERVED, FULL} STATUS;
+
+    } PROCTAB;
     typedef struct InterpLocal
     {
         PROCPNT CURPR;
@@ -119,18 +131,7 @@ namespace Cstar
         STYPE *STARTMEM;
         RSTYPE *RS;
         PROCPNT MAINPROC;
-        struct PROCTAB {
-            enum STATUS {NEVERUSED, EMPTY, RESERVED, FULL} STATUS;
-            double VIRTIME;
-            double BRKTIME;
-            double PROTIME;
-            PROCPNT RUNPROC;
-            int NUMPROC;
-            double STARTTIME;
-            BUSYPNT BUSYLIST;
-            float SPEED;
-        } PROCTAB[PMAX+1];
-
+        PROCTAB *PROCTAB;
         int CNUM, H1;
         // int I;
         int J, K, PNT, FREE;
@@ -156,7 +157,7 @@ namespace Cstar
         char INPUTFNAME[FILMAX + 1];
         char OUTPUTFNAME[FILMAX + 1];
         char LISTFNAME[FILMAX + 1];
-        bool MPIINIT[PMAX+1], MPIFIN[PMAX+1];
+        bool *MPIINIT, *MPIFIN;
         int MPICODE;
         int MPISEM;
         double MPITIME;
@@ -165,8 +166,8 @@ namespace Cstar
         int MPIROOT;
         int MPIOP;
         int MPICOMM;
-        int MPIPNT[PMAX+1];
-        int MPIRES[PMAX+1];
+        int *MPIPNT;
+        int *MPIRES;
         int MPICART[CARTMAX+1][MAXDIM+1];
         bool MPIPER[CARTMAX+1][MAXDIM+1];
         char PROMPT[10 + 1];

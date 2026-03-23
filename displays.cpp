@@ -125,7 +125,7 @@ namespace Cstar
     {
         return readstatus[st];
     }
-    const char *prcsrStatus(enum InterpLocal::PROCTAB::STATUS st)
+    const char *prcsrStatus(enum PROCTAB::STATUS st)
     {
         return status[st];
     }
@@ -140,7 +140,7 @@ namespace Cstar
             if (TAB[ix].NAME[0] == ' ')
                 break;
         }
-        funcLocations = static_cast<FuncLocation *>(calloc(funcMax + 1, sizeof(FuncLocation *)));
+        funcLocations = static_cast<FuncLocation *>(calloc(funcMax + 1, sizeof(FuncLocation)));
         funcLocations[0].tabLoc = funcMax;
         lst = 0;
         for (ix = Tx; ix > 0; --ix)
@@ -308,6 +308,7 @@ namespace Cstar
                 fprintf(STDOUT, "%s %5d\n", TAB[fp->tabLoc].NAME, fp->codeLoc);
             }
             free(funcLocations);
+            funcLocations = nullptr;
         }
     }
     void dumpSymbols()
@@ -493,7 +494,7 @@ namespace Cstar
     }
     void snapPDES(InterpLocal *il, PROCESSDESCRIPTOR *pd)
     {
-        struct InterpLocal::PROCTAB *ptab;
+        struct PROCTAB *ptab;
         ptab = &il->PROCTAB[pd->PROCESSOR];
         fprintf(STDOUT, "process ID: %d\n", pd->PID);
         fprintf(STDOUT, "  state: %s\n", states[pd->STATE]);
@@ -522,7 +523,7 @@ namespace Cstar
     {
         ACTIVEPROCESS *act, *acphead;
         PROCESSDESCRIPTOR *pd;
-        struct InterpLocal::PROCTAB *ptab;
+        PROCTAB *ptab;
         acphead = il->ACPHEAD;
         act = acphead;
         do
@@ -611,7 +612,7 @@ namespace Cstar
         fprintf(STDOUT, "Processor Table\n");
         fprintf(STDOUT, "Indx Status    Virtime Brktime Protime  Rpid  Num Strtime   Speed\n");
         ix = 0;
-        while (il->PROCTAB[ix].STATUS != InterpLocal::PROCTAB::STATUS::NEVERUSED)
+        while (il->PROCTAB[ix].STATUS != PROCTAB::STATUS::NEVERUSED)
         {
             pid = (il->PROCTAB[ix].RUNPROC == nullptr) ? -1 : il->PROCTAB[ix].RUNPROC->PID;
             fprintf(STDOUT, "%4d %.9s %7.1f %7.1f %7.1f %5d %4d %7.1f %7.1f\n", ix,

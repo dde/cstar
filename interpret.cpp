@@ -1645,6 +1645,7 @@ void showRealList(bool flg)
 
     void INITIALIZE(InterpLocal *il)
     {   int *ip;
+        PROCTAB *ptb;
         if (il->INITFLAG)
         {
             il->PTEMP = il->ACPHEAD;
@@ -1724,23 +1725,18 @@ void showRealList(bool flg)
             std::cin >> XR;
             XR = XR + 52379.0;
         }
-        for (int I = 0; I <= PMAX; I++)  // init all PROCTAB elements
+        ptb = il->PROCTAB;
+        for (int I = 0; I <= PMAX; ++I, ++ptb)  // init all PROCTAB elements
         {
-            il->PROCTAB[I].STATUS = InterpLocal::PROCTAB::STATUS::NEVERUSED;
-            il->PROCTAB[I].VIRTIME = 0;
-            il->PROCTAB[I].BRKTIME = 0;
-            il->PROCTAB[I].PROTIME = 0;
-            il->PROCTAB[I].RUNPROC = nullptr;
-            il->PROCTAB[I].NUMPROC = 0;
-            il->PROCTAB[I].STARTTIME = 0;
-            il->PROCTAB[I].BUSYLIST = nullptr;
-            if (il->VARIATION)
-            {
-                il->PROCTAB[I].SPEED = (float)(RANDGEN() + 0.001);
-            } else
-            {
-                il->PROCTAB[I].SPEED = 1;
-            }
+            ptb->STATUS = PROCTAB::STATUS::NEVERUSED;
+            ptb->VIRTIME = 0;
+            ptb->BRKTIME = 0;
+            ptb->PROTIME = 0;
+            ptb->RUNPROC = nullptr;
+            ptb->NUMPROC = 0;
+            ptb->STARTTIME = 0;
+            ptb->BUSYLIST = nullptr;
+            ptb->SPEED = (il->VARIATION) ? (float)(RANDGEN() + 0.001) : 0.0f;
         }
         il->PROLINECNT = 0;
         il->CLOCK = 0;
@@ -1774,7 +1770,7 @@ void showRealList(bool flg)
         il->MAINPROC->JOINSEM = 0;
         il->MAINPROC->PRIORITY = PROCESSDESCRIPTOR::PRIORITY::LOW;
         il->MAINPROC->SEQON = true;
-        il->PROCTAB[0].STATUS = InterpLocal::PROCTAB::STATUS::FULL;
+        il->PROCTAB[0].STATUS = PROCTAB::STATUS::FULL;
         il->PROCTAB[0].RUNPROC = il->MAINPROC;
         il->PROCTAB[0].NUMPROC = 1;
         il->CURPR = il->MAINPROC;
@@ -1795,6 +1791,10 @@ void showRealList(bool flg)
         }
         if (MPIMODE)
         {
+            il->MPIINIT = (bool *)malloc((PMAX + 1) * sizeof(bool));
+            il->MPIFIN  = (bool *)malloc((PMAX + 1) * sizeof(bool));
+            il->MPIPNT  = (int *) malloc((PMAX + 1) * sizeof(int));
+            il->MPIRES  = (int *) malloc((PMAX + 1) * sizeof(int));
             for (int I = 0; I <= PMAX; I++)
             {
                 il->MPIINIT[I] = false;
@@ -1861,6 +1861,7 @@ void showRealList(bool flg)
         il->VALUE = (BUFINTTYPE *)calloc(BUFMAX + 1, sizeof(BUFINTTYPE));
         il->RVALUE = (BUFREALTYPE *)calloc(BUFMAX + 1, sizeof(BUFREALTYPE));
         il->DATE = (BUFREALTYPE *)calloc(BUFMAX + 1, sizeof(BUFREALTYPE));
+        il->PROCTAB = (PROCTAB *)malloc((PMAX + 1) * sizeof(PROCTAB));
         INITCOMMANDS();
         // MPIMODE = false;
         do
@@ -2653,7 +2654,7 @@ void showRealList(bool flg)
                     std::cout << "PROCESSOR    SINCE START    SINCE LAST BREAK" << std::endl;
                     for (I = il->FIRST; I <= il->LAST; I++)
                     {
-                        if (il->PROCTAB[I].STATUS != InterpLocal::PROCTAB::STATUS::NEVERUSED || il->LAST < PMAX)
+                        if (il->PROCTAB[I].STATUS != PROCTAB::STATUS::NEVERUSED || il->LAST < PMAX)
                         {
                             std::cout << std::setw(6) << I << "    " <<
                             std::setw(9) << std::floor(il->PROCTAB[I].VIRTIME / il->CLOCK * 100) << "     ";
