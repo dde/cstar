@@ -15,7 +15,8 @@ if(${CMAKE_SYSTEM_NAME} STREQUAL "Windows")
 endif()
 set(HEADERS cs_global.h cs_basic.h cs_block.h cs_compile.h cs_defines.h cs_errors.h
         cs_interpret.h cs_exec.h
-        cs_PreBuffer.h)
+        cs_PreBuffer.h
+        ProcessDescriptor.h)
 set(SOURCE_FILES lexer.cpp
         errors.cpp
         interpret.cpp
@@ -25,7 +26,9 @@ set(SOURCE_FILES lexer.cpp
         program.cpp
         exec.cpp
         execlib.cpp
-        displays.cpp)
+        displays.cpp
+        ProcessDescriptor.cpp
+        InterpLocal.cpp)
 set(COMPILE_FILES compile.cpp
         block.cpp
         displays.cpp
