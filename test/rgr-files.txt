@@ -18,6 +18,7 @@ ct19.c
 ct20.c
 ct21.c
 ct22.c
+#ct30.c
 grayCode.c
 mms.c
 stream1.c
