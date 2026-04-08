@@ -10,6 +10,7 @@
 #include "cs_errors.h"
 namespace Cstar
 {
+    extern bool interactive;
     extern bool inCLUDEFLAG();
     extern std::FILE *LIS;
     std::string MSG[] = {
@@ -283,10 +284,13 @@ namespace Cstar
     void ERROREXIT()
     {
         float A, B;
-        std::cout << "PROGRAM SOURCE FILE IS NOW CLOSED TO ALLOW EDITING" << std::endl;
-        std::cout << std::endl;
-        std::cout << "To continue, press ENTER key, then Restart the C* Software System" << std::endl;
-        std::cin.ignore(1);
+        if (interactive)
+        {
+            std::cout << "PROGRAM SOURCE FILE IS NOW CLOSED TO ALLOW EDITING" << std::endl;
+            std::cout << std::endl;
+            std::cout << "To continue, press ENTER key, then Restart the C* Software System" << std::endl;
+            std::cin.ignore(1);\
+        }
         std::exit(1);
 //        A = 0;
 //        B = B / A;
