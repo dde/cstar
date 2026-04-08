@@ -18,6 +18,7 @@ def usage(_ttl,  _onam, _typs, _vers, _exes):
     print("  n next version (v.nn) added to the output file names (default next)")
     print("  p prior version (v.nn) added to the output file names (default 0)")
     print("  v test version (v.nn) (use instead of n and p if prior version is v.nn -1)")
+    print("  x execute only, no previous version compare")
     summary(_onam, _typs, _vers, _exes)
     exit(1)
 
@@ -44,8 +45,8 @@ def run_pgm(_pgm: str, _cmds: list[str], _sout: str):
 
 def get_args():
     # get command line options
-    _rtn = {"-h": False, "-d": False, "-g": False,
-            "-p": None, "-n": None, "-v": None, "-f": []}
+    _rtn = {"-h": False, "-d": False, "-g": False, "-x": False,
+            "-p": None, "-n": None, "-v": None, "-f": None}
     _ix = 1
     while _ix < len(sys.argv):
         if sys.argv[_ix].startswith("-"):
@@ -55,6 +56,8 @@ def get_args():
                 _rtn["-d"] = True
             elif sys.argv[_ix].startswith("-g"):
                 _rtn["-g"] = True
+            elif sys.argv[_ix].startswith("-x"):
+                _rtn["-x"] = True
             elif sys.argv[_ix].startswith("-n"):
                 _ix += 1
                 _rtn["-n"] = str(sys.argv[_ix])
@@ -64,9 +67,10 @@ def get_args():
             elif sys.argv[_ix].startswith("-v"):
                 _ix += 1
                 _rtn["-p"] = [prior_release(sys.argv[_ix]), sys.argv[_ix]]
+            elif sys.argv[_ix].startswith("-f"):
+                _ix += 1
+                _rtn["-f"] = sys.argv[_ix]
             else:
                 _rtn["-h"] = True
-        else:
-            _rtn["-f"].append(sys.argv[_ix])
         _ix += 1
     return _rtn
