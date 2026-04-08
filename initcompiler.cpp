@@ -7,6 +7,7 @@
 #include "cs_errors.h"
 namespace Cstar
 {
+    bool interactive = false;
     static void ENTER(const char *X0, OBJECTS X1, TYPES X2, int X3)
     {
         Tx++;
