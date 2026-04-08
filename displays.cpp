@@ -4,6 +4,7 @@
 #include "cs_global.h"
 #include "cs_compile.h"
 #include "cs_interpret.h"
+#include "ProcessDescriptor.h"
 namespace Cstar
 {
     const char *lookupSym(int, int);
@@ -11,7 +12,7 @@ namespace Cstar
     const char *arrayName(int);
     const char *opcodes[116] = {"pushstkloc", // 0
                                        "pushstklocri", "",
-                                       "movdspbas", "clrchnoseq", "unhookprcr",
+                                       "movdspbas", "clrchnoseq", "waitall",
                                        "noop",
                                        "jmpseqon", "pushsys",
                                        "mpiinit",
@@ -19,7 +20,7 @@ namespace Cstar
                                        "popjmpfalse",
                                        "",
                                        "getstkfrm1", "pushfm[T]",
-                                       "addint", "", "",
+                                       "addint", "cudainit", "",
                                        "getstkfrm2",
                                        "callblk",
                                        "swap", // 20
@@ -191,6 +192,11 @@ namespace Cstar
                 break;
             }
             ix += 1;
+        }
+        if (rtn == nosym)
+        {
+            ix = funcLocations[0].tabLoc;
+            rtn = symtabSearch(funcLocations[ix].tabLoc, X, Y);
         }
         return rtn;
     }
