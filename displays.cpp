@@ -618,7 +618,7 @@ namespace Cstar
         fprintf(STDOUT, "Processor Table\n");
         fprintf(STDOUT, "Indx Status    Virtime Brktime Protime  Rpid  Num Strtime   Speed\n");
         ix = 0;
-        while (il->PROCTAB[ix].STATUS != PROCTAB::STATUS::NEVERUSED)
+        while (ix <=  HIGHESTPROCESSOR && il->PROCTAB[ix].STATUS != PROCTAB::STATUS::NEVERUSED)
         {
             pid = (il->PROCTAB[ix].RUNPROC == nullptr) ? -1 : il->PROCTAB[ix].RUNPROC->PID;
             fprintf(STDOUT, "%4d %.9s %7.1f %7.1f %7.1f %5d %4d %7.1f %7.1f\n", ix,
