@@ -41,7 +41,7 @@ namespace Cstar
         enum PRIORITY {LOW, HIGH} PRIORITY = LOW;
         bool SEQON = true;
         bool GROUPREP = false;
-        PROCESSDESCRIPTOR(PROCPNT parent, Cstar::InterpLocal *il, int processor);
+        PROCESSDESCRIPTOR(PROCPNT parent, Cstar::InterpLocal *il, int proc, int processor);
         ~PROCESSDESCRIPTOR() = default;
     };
 }
