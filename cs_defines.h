@@ -69,5 +69,5 @@
 
 
 /* added */
-#define SYMBOLCNT 95
+#define SYMBOLCNT 99
 
