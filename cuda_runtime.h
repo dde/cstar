@@ -1,4 +1,3 @@
-#include <stdlib.h>
 #define cudaHostToDevice 1
 #define cudaDeviceToHost 1
 #define cudaDeviceToDevice 0
