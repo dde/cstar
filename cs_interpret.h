@@ -43,10 +43,11 @@ namespace Cstar
         BLKPNT NEXT;
     } BLOCKR;
     struct ACTIVEPROCESS;
-    typedef struct ACTIVEPROCESS {
+    struct ACTIVEPROCESS {
         PROCPNT PDES;
         ACTPNT NEXT;
-    } ACTIVEPROCESS;
+        ACTIVEPROCESS(PROCESSDESCRIPTOR *proc);
+    };
     typedef struct BUSYTYPE {
         double FIRST;
         double LAST;
@@ -63,6 +64,7 @@ namespace Cstar
         ERRC, LIST, RESETP, SHORT, VIEW, CDELAY, VARY, OPENF, CLOSEF,
         INPUTF, OUTPUTF, MPI, VERSION
     } COMTYP;
+    /*
     typedef struct PROCESSDESCRIPTOR
     {  // from interpret
         int T;  // process's stack top index
@@ -100,6 +102,7 @@ namespace Cstar
         bool SEQON;
         bool GROUPREP;
     } PROCESSDESCRIPTOR;
+    */
     typedef struct PROCTAB {
         double VIRTIME;
         double BRKTIME;
@@ -112,7 +115,7 @@ namespace Cstar
         enum STATUS {NEVERUSED, EMPTY, RESERVED, FULL} STATUS;
 
     } PROCTAB;
-    typedef struct InterpLocal
+    struct InterpLocal
     {
         PROCPNT CURPR;
 
@@ -213,7 +216,14 @@ namespace Cstar
         COMTYP COMJMP[COMMAX+1];
         COMTYP COMMLABEL;
         int LINECNT;
-    } InterpLocal;
+        void enqActiveProc(ACTIVEPROCESS *active);
+        inline void stackInit(STYPE *stk) {return;}
+        template<typename T, typename... Arg_t>
+        inline void stackInit(STYPE *stk, T value, Arg_t... args)    {
+            *stk = (STYPE)value;
+            stackInit(stk + 1, args...);
+        }
+    };
 
     // int HIGHESTPROCESSOR;
 
