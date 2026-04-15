@@ -9,6 +9,7 @@
 #include "cs_compile.h"
 #include "cs_interpret.h"
 #include "cs_exec.h"
+#include "ProcessDescriptor.h"
 namespace Cstar
 {
 #define MAXINT 32767
@@ -25,9 +26,21 @@ namespace Cstar
     struct CommdelayLocal
     {
         int T1, T2, T3, T4, I, DIST, NUMPACK, PATHLEN;
-        int PATH[PMAX + 1];
+        // int PATH[PMAX + 1];
+        int *PATH;
         double PASTINTERVAL, NOWINTERVAL, FINALINTERVAL;
         InterpLocal *il;
+    };
+    struct StackPrefix
+    {
+        int word0;
+        int word1;
+        int word2;
+        int word3;
+        int word4;
+        int word5;
+        int word6;
+        int word7;
     };
     extern ALFA PROGNAME;
     extern const char *opcodes[115];
@@ -214,8 +227,9 @@ namespace Cstar
     int COMMDELAY(InterpLocal *il, int SOURCE, int DEST, int LEN) {
 
         struct CommdelayLocal cl;
-        int rtn;
+        int rtn = 0;
         memset(&cl, 0, sizeof(cl));
+        cl.PATH = (int *)calloc(HIGHESTPROCESSOR + 1, sizeof(int));
         cl.il = il;
         cl.NUMPACK = LEN / 3;
         if (LEN % 3 != 0) {
@@ -359,6 +373,7 @@ namespace Cstar
         }
 //        if (rtn != 0)
 //            fprintf(STDOUT, "COMMDELAY source %d dest %d len %d returns %d\n", SOURCE, DEST, LEN, rtn);
+        free(cl.PATH);
         return rtn;
     }
 
@@ -523,11 +538,11 @@ namespace Cstar
                 if (il->ACPTAIL == il->ACPCUR) {
                     il->ACPTAIL = PREV;
                 }
-                if (debug & DBGPROC)
-                {
-                    fprintf(STDOUT, "slice terminated/freed process %d\n", proc->PID);
-                    snapPDES(il, proc);
-                }
+                // if (debug & DBGPROC)
+                // {
+                //     fprintf(STDOUT, "slice terminated/freed process %d\n", proc->PID);
+                //     snapPDES(il, proc);
+                // }
                 std::free(proc);
                 std::free(il->ACPCUR);
                 il->ACPCUR = PREV->NEXT;
@@ -536,7 +551,7 @@ namespace Cstar
                 PREV = il->ACPCUR;
                 il->ACPCUR = il->ACPCUR->NEXT;
             }
-        } while (!DONE && !((COUNT > PMAX) && DEADLOCK));
+        } while (!DONE && !((COUNT > HIGHESTPROCESSOR) && DEADLOCK));
         //if (il->CURPR->PID == 0)
         //    fprintf(STDOUT, "dispatch %d time %.1f seqtime %.1f\n", il->CURPR->PID, il->CURPR->TIME, il->SEQTIME);
         if (DEADLOCK) {
@@ -547,7 +562,92 @@ namespace Cstar
             dumpDeadlock(il);
         }
     }
-
+    static int findProcessor(PROCTAB *proctab, int &used)
+    {
+        // after case 79: find processor instruction
+        int I, J, H1, H2, rtn;
+        bool B1;
+        PROCTAB *prtb;
+        I = -1;
+        J = -1;
+        B1 = false;
+        H1 = MAXINT;
+        H2 = -1;
+        do
+        {
+            I += 1;
+            prtb = &proctab[I];
+            // with PROCTAB[I]
+            switch (prtb->STATUS)
+            {
+                case PROCTAB::STATUS::EMPTY:
+                    B1 = true;
+                    break;
+                case PROCTAB::STATUS::NEVERUSED:
+                    if (J == -1)
+                        J = I;
+                    break;
+                case PROCTAB::STATUS::FULL:
+                    if (prtb->NUMPROC < H1)
+                    {
+                        H2 = I;
+                        H1 = prtb->NUMPROC;
+                    }
+                    break;
+                case PROCTAB::STATUS::RESERVED:
+                    if (prtb->NUMPROC + 1 < H1)  // +1 fixed dde
+                    {
+                        H2 = I;
+                        H1 = prtb->NUMPROC + 1;
+                    }
+                    break;
+            }
+        } while (!B1 && I != HIGHESTPROCESSOR);
+        if (B1)
+        {
+            rtn = I;
+        }
+        else if (J > -1)
+        {
+            rtn = J;
+            used += 1;
+        }
+        else
+            rtn = H2;
+        proctab[rtn].STATUS = PROCTAB::STATUS::RESERVED;
+        return rtn;
+    }
+    static int allocCallFrame(InterpLocal *il, PRD *proc, int funcLoc)
+    {
+        // allocates a function call stack frame
+        // leaves current processor stack top set to last word of 8 word prefix
+        // returns stack location of acquired call frame
+        // 0 return is no allocation for internal function, negative return is FINDFRAME failure
+        int H1, H2 = 0, I;
+        TABREC *tbp = &TAB[funcLoc];
+        if (tbp->ADR == 0)
+        {
+            il->PS = InterpLocal::PS::FUNCCHK;
+        }
+        else if (tbp->ADR > 0)
+        {
+            H1 = BTAB[tbp->REF].VSIZE + WORKSIZE;
+            H2 = FINDFRAME(il, H1);
+            if (H2 >= 0)
+            {
+                il->S[H2 + 7] = proc->T;        // requestor stack top restored on return from call
+                proc->T = H2 - 1;               // one stack word below new frame
+                proc->STACKSIZE = H1 + H2 - 1;  // last word location in new frame
+                proc->T += BASESIZE;            // last word location in standard prefix
+                il->S[proc->T - 4] = H1 - 1;    // frame size minus one
+                il->S[proc->T - 3] = funcLoc;   // TAB location of function to be called
+                for (I = H2; I < H2 + BASESIZE; I += 1) {
+                    il->STARTMEM[I] = -il->STARTMEM[I];
+                }
+            }
+        }
+        return H2;
+    }
     void EXECUTE(InterpLocal *il)
     {
 //        ProcessState PS;
@@ -563,10 +663,10 @@ namespace Cstar
         struct InterpLocal::Channel *chan;
         // --- debugging ---
 
-//        int lct = 0;
-//        int mon = -1, val = 82;
-//        int braddr = 0;
-//        bool watch = false, breakat = false;
+        //        int lct = 0;
+        //        int mon = -1, val = 82;
+        //        int braddr = 0;
+        //        bool watch = false, breakat = false;
         // ---------
         ExLocal el = {0, 0, 0, 0, 0, 0, 0, 0,
                       0.0, {0, 0, 0}, false, nullptr,
@@ -591,7 +691,8 @@ namespace Cstar
                 //goto label_999;
                 continue;
             }
-
+            if (CURPR->PC > CMAX)
+                fprintf(STDOUT, "PC out of range %d\n", CURPR->PC);
             el.IR = CODE[CURPR->PC];
             CURPR->PC++;
             TIMEINC(il, 1, "exe1");
@@ -715,41 +816,14 @@ namespace Cstar
             }
             else
             {
-//                if (watch)
-//                {
-//                    if (il->S[mon] != val)
-//                    {
-//                        fprintf(STDOUT, "----------modified %d at %d----------\n", il->S[mon], CURPR->PC);
-//                        watch = false;
-//                    }
-//                }
-//                else
-//                {
-//                    if (mon >= 0 && il->S[mon] == val)
-//                    {
-//                        fprintf(STDOUT, "----------monitor set at %d----------\n", CURPR->PC);
-//                        watch = true;
-//                    }
-//                }
-//                if (breakat)
-//                {
-//                    if (CURPR->PC == braddr)
-//                    {
-//                        fprintf(STDOUT, "----------break at at %d----------\n", CURPR->PC);
-//                    }
-//                }
-                if (debug & DBGINST)
-                {
+                // if (debug & DBGINST)
+                // {
 //                    if (CURPR->PROCESSOR == 0 && CURPR->PC < 81 && CURPR->PC > 18)
 //                    {
-                        fprintf(STDOUT, "proc %3d stk %5d [%5d] ", CURPR->PROCESSOR, CURPR->T, il->S[CURPR->T]);
-                        dumpInst(CURPR->PC - 1);
+                        // fprintf(STDOUT, "proc %3d stk %5d [%5d] ", CURPR->PROCESSOR, CURPR->T, il->S[CURPR->T]);
+                        // dumpInst(CURPR->PC - 1);
 //                    }
-                }
-//                if (CURPR->PID == 1)
-//                    dumpInst(CURPR->PC - 1);
-//                if (++lct > 2000000)
-//                    throw std::exception();
+                // }
                 switch (el.IR.F) {
                     case 0:  // push DISPLAY[op1]+op2 (stack frame location of variable op2)
                         CURPR->T++;
@@ -757,8 +831,6 @@ namespace Cstar
                             il->PS = InterpLocal::PS::STKCHK;
                         } else {
                             il->S[CURPR->T] = CURPR->DISPLAY[el.IR.X] + el.IR.Y;
-//                            fprintf(STDOUT, "%3d: %d %d,%d %s %s\n", CURPR->PC - 1,
-//                                el.IR.F, el.IR.X, el.IR.Y, opcodes[el.IR.F], lookupSym(el.IR.X, el.IR.Y));
                         }
                         break;
                     case 1: {
@@ -777,8 +849,6 @@ namespace Cstar
                             if (il->S[CURPR->T] == RTAG) {
                                 il->RS[CURPR->T] = il->RS[el.H1];
                             }
-//                            fprintf(STDOUT, "%3d: %d %d,%d %s %s\n", CURPR->PC - 1,
-//                                    el.IR.F, el.IR.X, el.IR.Y, opcodes[el.IR.F], lookupSym(el.IR.X, el.IR.Y));
                         }
                         break;
                     }
@@ -835,7 +905,9 @@ namespace Cstar
                     }
                     case 8: {
                         switch (el.IR.Y) {
-                            case 10: {
+                            case 5:  // (char)int
+                                break;
+                            case 10: { // cast (int)float
                                 il->R1 = il->RS[CURPR->T];
                                 if (il->R1 >= 0 || il->R1 == (int)(il->R1)) {
                                     il->S[CURPR->T] = (int)(il->R1);
@@ -847,7 +919,7 @@ namespace Cstar
                                 }
                                 break;
                             }
-                            case 19: {
+                            case 19: {  // self
                                 CURPR->T++;
                                 if (CURPR->T > CURPR->STACKSIZE) {
                                     il->PS = InterpLocal::PS::STKCHK;
@@ -856,7 +928,7 @@ namespace Cstar
                                 }
                                 break;
                             }
-                            case 20: {
+                            case 20: {  // time
                                 CURPR->T++;
                                 if (CURPR->T > CURPR->STACKSIZE) {
                                     il->PS = InterpLocal::PS::STKCHK;
@@ -866,7 +938,7 @@ namespace Cstar
                                 }
                                 break;
                             }
-                            case 21: {
+                            case 21: {  // sequential time
                                 CURPR->T++;
                                 if (CURPR->T > CURPR->STACKSIZE) {
                                     il->PS = InterpLocal::PS::STKCHK;
@@ -876,7 +948,7 @@ namespace Cstar
                                 }
                                 break;
                             }
-                            case 22: {
+                            case 22: {  // myid
                                 CURPR->T++;
                                 if (CURPR->T > CURPR->STACKSIZE) {
                                     il->PS = InterpLocal::PS::STKCHK;
@@ -885,13 +957,16 @@ namespace Cstar
                                 }
                                 break;
                             }
-                            case 23: {
+                            case 23: {  // constant 10
                                 CURPR->T++;
                                 if (CURPR->T > CURPR->STACKSIZE) {
                                     il->PS = InterpLocal::PS::STKCHK;
                                 } else {
                                     il->S[CURPR->T] = 10;
                                 }
+                                break;
+                            default:
+                                fprintf(STDOUT, "Missing instruction %d subcode %d\n", el.IR.F, el.IR.Y);
                                 break;
                             }
                         }
@@ -908,16 +983,19 @@ namespace Cstar
                                 }
                                 proc->VIRTUALTIME = 0;
                                 memcpy(proc->DISPLAY, CURPR->DISPLAY, sizeof(CURPR->DISPLAY));
+                                /*
                                 il->PTEMP = (ACTPNT)calloc(1, sizeof(ACTIVEPROCESS));
                                 il->PTEMP->PDES = proc;
                                 il->PTEMP->NEXT = il->ACPTAIL->NEXT;
                                 il->ACPTAIL->NEXT = il->PTEMP;
                                 il->ACPTAIL = il->PTEMP;
+                                */
+                                il->enqActiveProc(new ACTIVEPROCESS(proc));
                                 el.H1 = FINDFRAME(il, il->STKMAIN);
-                                if (debug & DBGPROC)
-                                {
-                                    fprintf(STDOUT, "opc %d findframe %d length %d, response %d\n", el.IR.F, CURPR->PID, il->STKMAIN, el.H1);
-                                }
+                                // if (debug & DBGPROC)
+                                // {
+                                //     fprintf(STDOUT, "opc %d findframe %d length %d, response %d\n", el.IR.F, CURPR->PID, il->STKMAIN, el.H1);
+                                // }
                                 if (el.H1 > 0) {
                                     proc->T = el.H1 + BTAB[2].VSIZE - 1;
                                     proc->STACKSIZE = el.H1 + il->STKMAIN - 1;
@@ -936,6 +1014,10 @@ namespace Cstar
                                     il->S[el.H1 + 3] = -1;
                                     il->S[el.H1 + 4] = BTAB[1].LAST;
                                     il->S[el.H1 + 5] = 1;
+                                    // if (debug & DBGRELEASE)
+                                    // {
+                                    //     fprintf(STDOUT, "ini op %d pid %d ct=%d\n", el.IR.F, CURPR->PID, il->S[el.H1 + 5]);
+                                    // }
                                     il->S[el.H1 + 6] = il->STKMAIN;
                                     proc->DISPLAY[1] = el.H1;
                                 }
@@ -960,16 +1042,16 @@ namespace Cstar
                                 el.J = 1;
                                 while (proc->DISPLAY[el.J] != -1) {
                                     il->S[proc->DISPLAY[el.J] + 5]++;
-                                    if (debug & DBGRELEASE)
-                                    {
-                                        fprintf(STDOUT, "%d ref ct %d ct=%d\n", el.IR.F, CURPR->PID, il->S[proc->DISPLAY[el.J] + 5]);
-                                    }
+                                    // if (debug & DBGRELEASE)
+                                    // {
+                                    //     fprintf(STDOUT, "inc op %d pid %d ct=%d\n", el.IR.F, CURPR->PID, il->S[proc->DISPLAY[el.J] + 5]);
+                                    // }
                                     el.J++;
                                 }
-                                if (debug & DBGPROC)
-                                {
-                                    fprintf(STDOUT, "opc %d newproc pid %d\n", el.IR.F, proc->PID);
-                                }
+                                // if (debug & DBGPROC)
+                                // {
+                                //     fprintf(STDOUT, "opc %d newproc pid %d\n", el.IR.F, proc->PID);
+                                // }
                                 CURPR->FORKCOUNT += 1;
                             }
                             CURPR->PC = CURPR->PC + 3;
@@ -980,12 +1062,14 @@ namespace Cstar
                         CURPR->PC = (int)el.IR.Y;
                         break;
                     }
-                    case 11:  // if0 pop,->op2
+                    case 11: {
+                        // if0 pop,->op2
                         if (il->S[CURPR->T] == 0) {
                             CURPR->PC = el.IR.Y;
                         }
                         CURPR->T--;
                         break;
+                    }
                     case 12: {
                         el.H1 = il->S[CURPR->T];
                         CURPR->T--;
@@ -1008,10 +1092,10 @@ namespace Cstar
                         el.H1 = el.IR.X;
                         el.H2 = el.IR.Y;
                         el.H3 = FINDFRAME(il, el.H2 + 1);
-                        if (debug & DBGPROC)
-                        {
-                            fprintf(STDOUT, "opc %d findframe %d length %d, response %d\n", el.IR.F, CURPR->PID, el.H2 + 1, el.H3);
-                        }
+                        // if (debug & DBGPROC)
+                        // {
+                        //     fprintf(STDOUT, "opc %d findframe %d length %d, response %d\n", el.IR.F, CURPR->PID, el.H2 + 1, el.H3);
+                        // }
                         if (el.H3 < 0) {
                             il->PS = InterpLocal::PS::STKCHK;
                         } else {
@@ -1048,17 +1132,108 @@ namespace Cstar
                         il->S[CURPR->T] = il->S[CURPR->T] + il->S[CURPR->T + 1];
                         break;
                     }
+                    case 16:   // cuda Init
+                    {
+                        BTABREC *btb;
+                        int *ip;
+                        int p1, p2, p3, p4;
+                        int bix, biy, tix, tiy, bx;
+                        div_t thr;
+                        if (il->NEXTID + HIGHESTPROCESSOR >= PIDMAX)
+                        {
+                            il->PS = InterpLocal::PS::PROCCHK;
+                            break;
+                        }
+                        // Stack contents at entry
+                        // BASE
+                        // + BASESIZE - CUDABLOCKS
+                        //   + 1 - CUDATHREADS
+                        //   + 2 to PSIZE -  kernel parameters
+                        // TOP - at entry - last kernel parameter
+                        //   + 1 - GRIDDIM.x, .y;  x - block row size within grid, y blck column size
+                        //   + 3 - BLOCKIDX.x, .y;
+                        //   + 5 - BLOCKDIM.x, .y;
+                        //   + 7 - THREADIDX.x, .y
+                        // CURPR->FORKCOUNT -= 1;
+                        btb = &BTAB[TAB[el.IR.Y].REF];
+                        el.J = CURPR->T - (btb->PSIZE - BASESIZE - 1);  // CUDABLOCKS in stack
+                        el.H1 = il->S[el.J];  // CUDABLOCKS
+                        el.H2 = el.H1 * il->S[el.J + 1];  // CUDATHREADS
+                        p2 = arch.gpu_size[1];
+                        p1 = arch.gpu_size[0] / p2;
+                        p4 = arch.gpu_size[3];
+                        p3 = arch.gpu_size[2] / p4;
+                        // il->S[T + 1] = el.H1;  // GridDim.x
+                        // il->S[T + 2] = 1;  // GridDim.y
+                        // il->S[T + 3] = 0;  // BlockIdx.x
+                        // il->S[T + 4] = 0;  // BlockIdx.y
+                        // il->S[T + 5] = el.H2;  // BlockDim.x
+                        // il->S[T + 6] = 1;  // BlockDim.y
+                        // il->S[T + 7] = 0;  // ThreadIdx.x
+                        // il->S[T + 8] = 0;  // ThreadIdx.y
+                        // el.K = CURPR->T + 7;  // ThreadIdx.x location
+                        il->stackInit(&il->S[CURPR->T + 1], p1, p2, 0, 0, p3, p4, 0, 0);
+                        tix = tiy = bix = biy = 0;
+                        for (el.I = 1; el.I < el.H2; el.I += 1)
+                        {
+                            el.K = findProcessor(il->PROCTAB, il->USEDPROCS);
+                            proc = new PROCESSDESCRIPTOR(CURPR, il, il->NEXTID++, el.K);
+                            //proc->ALTPROC = proc->PROCESSOR;
+                            //proc->PROCESSOR = CURPR->PROCESSOR;
+                            il->enqActiveProc(new ACTIVEPROCESS(proc));
+                            el.H3 = allocCallFrame(il, proc, el.IR.Y);
+                            if (el.H3 < 0)
+                            {
+                                il->PS = InterpLocal::PS::STORCHK;
+                                goto L16;
+                            }
+                            memcpy(&il->S[el.H3 + BASESIZE], &il->S[CURPR->T + BASESIZE - btb->PSIZE + 1],
+                                sizeof(STYPE) * (btb->VSIZE - BASESIZE));
+                            proc->T = el.H3 + btb->PSIZE - 1;
+                            if (++tix >= p3)
+                            {
+                                tix = 0;
+                                tiy += 1;
+                            }
+                            if (tiy >= p4)
+                            {
+                                tiy = 0;
+                                if (++bix >= p1)
+                                {
+                                    bix = 0;
+                                    biy += 1;
+                                }
+                            }
+                            il->S[proc->T + 7] = tix;  // threadIdx.x
+                            il->S[proc->T + 8] = tiy;  // threadIdx.y
+                            il->S[proc->T + 3] = bix;  // blockIdx.x
+                            il->S[proc->T + 4] = biy;  // blockIdx.y
+                            proc->PC = CURPR->PC + 1;  // started processes skip the following jump instruction
+                            proc->PRIORITY = PRD::PRIORITY::HIGH;
+                            if (CURPR->NUMCHILDREN == 0)
+                                CURPR->MAXCHILDTIME = CURPR->TIME;
+                            CURPR->NUMCHILDREN += 1;
+                            ip = &proc->DISPLAY[1];
+                            while (*ip != -1) {
+                                il->S[*ip + 5] += 1;
+                                // if (debug & DBGRELEASE)
+                                // {
+                                //     fprintf(STDOUT, "inc op %d pid %d ct=%d\n", el.IR.F, CURPR->PID, il->S[*ip + 5]);
+                                // }
+                                ++ip;
+                            }
+                        }
+                      L16:
+                        break;
+                    }
                     case 18: {  // IR.Y is index of a function in TAB[] symbol table
                                 // get stack frame for block execution callblk op
+                        /*
                         if (TAB[el.IR.Y].ADR == 0) {
                             il->PS = InterpLocal::PS::FUNCCHK;
                         } else if (TAB[el.IR.Y].ADR > 0) {
                             el.H1 = BTAB[TAB[el.IR.Y].REF].VSIZE + WORKSIZE;
                             el.H2 = FINDFRAME(il, el.H1);
-                            if (debug & DBGPROC)
-                            {
-                                fprintf(STDOUT, "opc %d findframe %d length %d, response %d\n", el.IR.F, CURPR->PID, el.H1, el.H2);
-                            }
                             if (el.H2 >= 0) {
                                 il->S[el.H2 + 7] = CURPR->T;
                                 CURPR->T = el.H2 - 1;
@@ -1070,6 +1245,11 @@ namespace Cstar
                                     il->STARTMEM[el.I] = -il->STARTMEM[el.I];
                                 }
                             }
+                        }
+                        */
+                        if (allocCallFrame(il, CURPR, el.IR.Y) < 0)
+                        {
+                            il->PS = InterpLocal::PS::STORCHK;
                         }
                         break;
                     }
@@ -1084,16 +1264,22 @@ namespace Cstar
                             for (el.I = el.H3 + 2; el.I <= LMAX; el.I++) { // clear DISPLAY to top w/-1
                                 CURPR->DISPLAY[el.I] = -1;
                             }
-                            il->S[el.H1 + 6] = il->S[el.H1 + 3] + 1;
+                            il->S[el.H1 + 6] = il->S[el.H1 + 3] + 1;  //
                             el.H4 = il->S[el.H1 + 3] + el.H1;
                             il->S[el.H1 + 1] = CURPR->PC;  // return addr
                             il->S[el.H1 + 2] = CURPR->DISPLAY[el.H3];
                             il->S[el.H1 + 3] = CURPR->B;
                             il->S[el.H1 + 5] = 1;
+                            // if (debug & DBGRELEASE)
+                            // {
+                            //     fprintf(STDOUT, "ini op %d pid %d ct=%d\n", el.IR.F, CURPR->PID, il->S[el.H1 + 5]);
+                            // }
+                            /*  Clears stack from beginning of locals to end of stack allocation
                             for (el.H3 = CURPR->T + 1; el.H3 <= el.H4; el.H3++) {
                                 il->S[el.H3] = 0;
                                 il->RS[el.H3] = 0.0;
                             }
+                            */
                             for (el.H3 = el.H1; el.H3 <= el.H4; el.H3++) {
                                 il->SLOCATION[el.H3] = CURPR->PROCESSOR;
                             }
@@ -1267,6 +1453,9 @@ namespace Cstar
                                         il->S[el.H1] = fgetc(STDIN);
                                         if (0 > il->S[el.H1])
                                             IORESULT = -1;
+                                        break;
+                                    default:
+                                        fprintf(STDOUT, "Missing instruction %d subcode %d\n", el.IR.F, el.IR.Y);
                                         break;
                                     }
                                 }
@@ -1470,29 +1659,29 @@ namespace Cstar
                             CURPR->FORKCOUNT = CURPR->FORKCOUNT - 1;
                         } else {
                             il->PS = InterpLocal::PS::FIN;
-                            if (debug & DBGPROC)
-                            {
-                                fprintf(STDOUT, "opc %d terminated pid %d\n", el.IR.F, CURPR->PID);
-                                if (CURPR->PID == 0)
-                                    unreleased(il);
-                            }
-                            CURPR->STATE = PROCESSDESCRIPTOR::TERMINATED;
+                            // if (debug & DBGPROC)
+                            // {
+                            //     fprintf(STDOUT, "opc %d terminated pid %d\n", el.IR.F, CURPR->PID);
+                            //     if (CURPR->PID == 0)
+                            //         unreleased(il);
+                            // }
+                            CURPR->STATE = PRD::STATE::TERMINATED;
                         }
                         break;
                     }
                     case 32: {
                         if (il->S[CURPR->B+5] == 1) {
-                            if (debug & DBGRELEASE)
-                            {
-                                fprintf(STDOUT, "%d release %d fm=%d ln=%d\n", el.IR.F, CURPR->PID, CURPR->B, il->S[CURPR->B + 6]);
-                            }
+                            // if (debug & DBGRELEASE)
+                            // {
+                            //     fprintf(STDOUT, "rel op %d pid %d fm=%d ln=%d\n", el.IR.F, CURPR->PID, CURPR->B, il->S[CURPR->B + 6]);
+                            // }
                             RELEASE(il, CURPR->B, il->S[CURPR->B+6]);
                         } else {
                             il->S[CURPR->B+5] -= 1;
-                            if (debug & DBGRELEASE)
-                            {
-                                fprintf(STDOUT, "%d ref ct %d ct=%d\n", el.IR.F, CURPR->PID, il->S[CURPR->B + 5]);
-                            }
+                            // if (debug & DBGRELEASE)
+                            // {
+                            //     fprintf(STDOUT, "dec op %d pid %d ct=%d\n", el.IR.F, CURPR->PID, il->S[CURPR->B + 5]);
+                            // }
                         }
                         el.H1 = TAB[il->S[CURPR->B+4]].LEV;
                         CURPR->DISPLAY[el.H1+1] = -1;
@@ -1512,19 +1701,19 @@ namespace Cstar
                         CURPR->DISPLAY[el.H1+1] = -1;
                         if (il->S[CURPR->B+5] == 1)
                         {
-                            if (debug & DBGRELEASE)
-                            {
-                                // fprintf(STDOUT, "release base %d, length %d\n", CURPR->B, il->S[CURPR->B+6]);
-                                fprintf(STDOUT, "%d release %d fm=%d ln=%d\n", el.IR.F, CURPR->PID, CURPR->B, il->S[CURPR->B + 6]);
-                            }
+                            // if (debug & DBGRELEASE)
+                            // {
+                            //     // fprintf(STDOUT, "release base %d, length %d\n", CURPR->B, il->S[CURPR->B+6]);
+                            //     fprintf(STDOUT, "rel op %d pid %d fm=%d ln=%d\n", el.IR.F, CURPR->PID, CURPR->B, il->S[CURPR->B + 6]);
+                            // }
                             RELEASE(il, CURPR->B, il->S[CURPR->B+6]);
                         } else {
                             //fprintf(STDOUT, "release adjacent %d\n", il->S[CURPR->B+6]);
                             il->S[CURPR->B+5] = il->S[CURPR->B+5] - 1;
-                            if (debug & DBGRELEASE)
-                            {
-                                fprintf(STDOUT, "%d ref ct %d ct=%d\n", el.IR.F, CURPR->PID, il->S[CURPR->B + 5]);
-                            }
+                            // if (debug & DBGRELEASE)
+                            // {
+                            //     fprintf(STDOUT, "dec op %d pid %d ct=%d\n", el.IR.F, CURPR->PID, il->S[CURPR->B + 5]);
+                            // }
                         }
                         CURPR->T = il->S[CURPR->B+7] + 1;
                         il->S[CURPR->T] = il->S[el.H2];
@@ -1543,7 +1732,8 @@ namespace Cstar
                     case 34: {  // get variable stack location and replace top with value
                         // load indirect ->[T] to T
                         el.H1 = il->S[CURPR->T];
-                        if ((el.H1 <= 0) || (el.H1 >= STMAX)) {
+                        // if ((el.H1 <= 0) || (el.H1 >= STMAX)) {  DE 0 is a valid stack location
+                        if ((el.H1 < 0) || (el.H1 >= STMAX)) {
                             il->PS = InterpLocal::PS::REFCHK;
                         } else {
                             if (TOPOLOGY != SHAREDSY) {
@@ -1833,12 +2023,12 @@ namespace Cstar
                         }
                         el.H2 = il->SLOCATION[el.H1];
                         il->CNUM = il->S[el.H1];
-                        if (debug & DBGRECV)
-                        {
-                            fprintf(STDOUT, "recv %d pid %d pc %d state %s rdstatus %s chan %d\n",
-                                    el.IR.F, CURPR->PID, CURPR->PC,
-                                    nameState(CURPR->STATE), nameRdstatus(CURPR->READSTATUS), il->CNUM);
-                        }
+                        // if (debug & DBGRECV)
+                        // {
+                        //     fprintf(STDOUT, "recv %d pid %d pc %d state %s rdstatus %s chan %d\n",
+                        //             el.IR.F, CURPR->PID, CURPR->PC,
+                        //             nameState(CURPR->STATE), nameRdstatus(CURPR->READSTATUS), il->CNUM);
+                        // }
                         if (il->NUMTRACE > 0) {
                             CHKVAR(il, el.H1);
                         }
@@ -1927,10 +2117,10 @@ namespace Cstar
                                 if ((*chan).WAIT->PDES == CURPR) { // remove CURPR from wait list
                                     il->PTEMP = (*chan).WAIT;
                                     (*chan).WAIT = (*chan).WAIT->NEXT;
-                                    if (debug & DBGPROC)
-                                    {
-                                        fprintf(STDOUT, "remove pid %d from wait list\n", CURPR->PID);
-                                    }
+                                    // if (debug & DBGPROC)
+                                    // {
+                                    //     fprintf(STDOUT, "remove pid %d from wait list\n", CURPR->PID);
+                                    // }
                                     std::free(il->PTEMP);  // free ACTPNT
                                 }
                                 if ((*chan).WAIT != nullptr) { // set next on wait list
@@ -1944,12 +2134,12 @@ namespace Cstar
                             }
                         }
                     L699:
-                        if (debug & DBGRECV)
-                        {
-                            fprintf(STDOUT, "recv(e) pid %d state %s rdstatus %s chan %d WPID %d\n", CURPR->PID,
-                                    nameState(CURPR->STATE), nameRdstatus(CURPR->READSTATUS), il->CNUM,
-                                    ((*chan).WAIT != nullptr) ? (*chan).WAIT->PDES->PID : -1);
-                        }
+                        // if (debug & DBGRECV)
+                        // {
+                        //     fprintf(STDOUT, "recv(e) pid %d state %s rdstatus %s chan %d WPID %d\n", CURPR->PID,
+                        //             nameState(CURPR->STATE), nameRdstatus(CURPR->READSTATUS), il->CNUM,
+                        //             ((*chan).WAIT != nullptr) ? (*chan).WAIT->PDES->PID : -1);
+                        // }
                         break;
                     }
                     case 66:
@@ -1964,11 +2154,11 @@ namespace Cstar
                             il->CNUM = FIND(il);
                             il->S[il->S[CURPR->T - 1]] = il->CNUM;
                         }
-                        if (debug & DBGSEND)
-                        {
-                            fprintf(STDOUT, "sendchan %d pid %d var [[T]] %d chan %d\n",
-                                    el.IR.F, CURPR->PID, il->S[il->S[CURPR->T - 1]], il->CNUM);
-                        }
+                        // if (debug & DBGSEND)
+                        // {
+                        //     fprintf(STDOUT, "sendchan %d pid %d var [[T]] %d chan %d\n",
+                        //             el.IR.F, CURPR->PID, il->S[il->S[CURPR->T - 1]], il->CNUM);
+                        // }
                         el.H1 = COMMDELAY(il, CURPR->PROCESSOR, el.H2, el.IR.Y);
                         // WITH CHAN[CNUM] DO
                         // il->CHAN[il->CNUM]
@@ -2059,7 +2249,7 @@ namespace Cstar
                     case 74: {
                         il->NOSWITCH = false;
                         TIMEINC(il, CREATETIME, "cs67");
-                        proc = (PROCPNT)calloc(1, sizeof(PROCESSDESCRIPTOR));
+                        proc = static_cast<PROCPNT>(calloc(1, sizeof(PROCESSDESCRIPTOR)));
                         proc->PC = CURPR->PC + 1;
                         proc->PID = il->NEXTID++;
                         //il->NEXTID += 1;
@@ -2071,16 +2261,19 @@ namespace Cstar
                             proc->DISPLAY[i] = CURPR->DISPLAY[i];
                         }
                         proc->B = CURPR->B;
+                        /*
                         il->PTEMP = (ACTPNT)calloc(1, sizeof(ACTIVEPROCESS));
                         il->PTEMP->PDES = proc;
                         il->PTEMP->NEXT = il->ACPTAIL->NEXT;
                         il->ACPTAIL->NEXT = il->PTEMP;
                         il->ACPTAIL = il->PTEMP;
+                        */
+                        il->enqActiveProc(new ACTIVEPROCESS(proc));
                         proc->T = FINDFRAME(il, WORKSIZE) - 1;
-                        if (debug & DBGPROC)
-                        {
-                            fprintf(STDOUT, "opc %d findframe %d length %d, response %d\n", el.IR.F, proc->PID, WORKSIZE, proc->T + 1);
-                        }
+                        // if (debug & DBGPROC)
+                        // {
+                        //     fprintf(STDOUT, "opc %d findframe %d length %d, response %d\n", el.IR.F, proc->PID, WORKSIZE, proc->T + 1);
+                        // }
                         proc->STACKSIZE = proc->T + WORKSIZE;
                         proc->BASE = proc->T + 1;
                         proc->TIME = CURPR->TIME;
@@ -2127,10 +2320,10 @@ namespace Cstar
                             }
                             if (el.IR.F == 74) {
                                 proc->FORLEVEL = proc->FORLEVEL + 1;
-                                el.H1 = il->S[CURPR->T - 2];
-                                el.H2 = il->S[CURPR->T - 1];
-                                el.H3 = il->S[CURPR->T];
-                                el.H4 = il->S[CURPR->T - 3];
+                                el.H1 = il->S[CURPR->T - 2];  // forall index value
+                                el.H2 = il->S[CURPR->T - 1];  // upper forall limit
+                                el.H3 = il->S[CURPR->T];  // group size, loop increment
+                                el.H4 = il->S[CURPR->T - 3];  // forall index stack location
                                 proc->T = proc->T + 1;
                                 il->S[proc->T] = el.H1;
                                 il->SLOCATION[proc->T] = el.H4;
@@ -2162,10 +2355,10 @@ namespace Cstar
                         el.J = 1;
                         while (proc->DISPLAY[el.J] != -1) {
                             il->S[proc->DISPLAY[el.J] + 5] += 1;
-                            if (debug & DBGRELEASE)
-                            {
-                                fprintf(STDOUT, "%d ref ct %d ct=%d\n", el.IR.F, CURPR->PID, il->S[proc->DISPLAY[el.J] + 5]);
-                            }
+                            // if (debug & DBGRELEASE)
+                            // {
+                            //     fprintf(STDOUT, "inc op %d pid %d ct=%d\n", el.IR.F, proc->PID, il->S[proc->DISPLAY[el.J] + 5]);
+                            // }
                             el.J = el.J + 1;
                         }
                         if (el.IR.Y == 1) {
@@ -2188,10 +2381,10 @@ namespace Cstar
                         {
                             CURPR->FORKCOUNT += 1;
                         }
-                        if (debug & DBGPROC)
-                        {
-                            fprintf(STDOUT, "opc %d newproc pid %d\n", el.IR.F, proc->PID);
-                        }
+                        // if (debug & DBGPROC)
+                        // {
+                        //     fprintf(STDOUT, "opc %d newproc pid %d\n", el.IR.F, proc->PID);
+                        // }
 //                        fprintf(STDOUT, "fork processsor %d alt %d status %s\n", proc->PROCESSOR, proc->ALTPROC,
 //                              prcsrStatus(il->PROCTAB[proc->PROCESSOR].STATUS));
                         break;
@@ -2212,7 +2405,7 @@ namespace Cstar
                                     if (il->S[el.J + 5] == 0) {
                                         if (debug & DBGRELEASE)
                                         {
-                                            fprintf(STDOUT, "%d releas1 %d fm=%d ln=%d\n", el.IR.F, CURPR->PID, el.J, il->S[el.J + 6]);
+                                            fprintf(STDOUT, "dec op %d pid %d fm=%d ln=%d\n", el.IR.F, CURPR->PID, el.J, il->S[el.J + 6]);
                                         }
                                         RELEASE(il, el.J, il->S[el.J + 6]);
                                     }
@@ -2220,7 +2413,7 @@ namespace Cstar
                                     {
                                         if (debug & DBGRELEASE)
                                         {
-                                            fprintf(STDOUT, "%d ref ct %d ct=%d\n", el.IR.F, CURPR->PID, il->S[el.J + 5]);
+                                            fprintf(STDOUT, "dec op %d pid %d fm=%d ct=%d\n", el.IR.F, CURPR->PID, el.J, il->S[el.J + 5]);
                                         }
                                     }
                                 }
@@ -2228,7 +2421,7 @@ namespace Cstar
                             if (!MPIMODE) {
                                 if (debug & DBGRELEASE)
                                 {
-                                    fprintf(STDOUT, "%d releas2 %d fm=%d ln=%d\n", el.IR.F, CURPR->PID, CURPR->BASE, WORKSIZE);
+                                    fprintf(STDOUT, "rel op %d pid %d fm=%d ln=%d\n", el.IR.F, CURPR->PID, CURPR->BASE, WORKSIZE);
                                 }
                                 RELEASE(il, CURPR->BASE, WORKSIZE);
                             }
@@ -2313,10 +2506,10 @@ namespace Cstar
                         break;
                     }
                     case 75: {
-                        // [T] = group size (GROUPING)
-                        // [T-1] = upper processes limit
-                        // [T-2] = initial value for index
-                        // [T-3] = index stk loc
+                        // [T] = group size (GROUPING), also loop increment
+                        // [T-1] = upper forall limit
+                        // [T-2] = value of forall index
+                        // [T-3] = index stack location
                         CURPR->FORINDEX = CURPR->T - 2;
                         if (il->S[CURPR->T] <= 0) {
                             il->PS = InterpLocal::PS::GRPCHK;
@@ -2329,10 +2522,10 @@ namespace Cstar
                         break;
                     }
                     case 76: {
-                        // [T-3] is stk frame?
-                        // [T-2] is counter
-                        // [T-1] is limit
-                        // [T] is increment
+                        // [T] = group size (GROUPING), also loop increment
+                        // [T-1] = upper forall limit
+                        // [T-2] = value of forall index
+                        // [T-3] = index stack location
                         // [T-2] += [T]
                         // if [T-2] <= [T-1] jmp IR.Y
                         // else pop 4 off stack, priority = LOW
@@ -2373,57 +2566,56 @@ namespace Cstar
                         if (CURPR->T > CURPR->STACKSIZE) {
                             il->PS = InterpLocal::PS::STKCHK;
                         } else {
-                            // il->S[T] = RTAG;
-                            // il->RS[T] = CONTABLE[el.IR.Y];
-                            el.I = -1;
-                            el.J = -1;
-                            el.B1 = false;
-                            el.H1 = MAXINT;
-                            el.H2 = -1;  // ?? added DE
-                            do
-                            {
-                                el.I += 1;
-                                prtb = &il->PROCTAB[el.I];
-                                // with PROCTAB[I]
-                                switch (prtb->STATUS)
-                                {
-                                    case PROCTAB::STATUS::EMPTY:
-                                        el.B1 = true;
-                                        break;
-                                    case PROCTAB::STATUS::NEVERUSED:
-                                        if (el.J == -1)
-                                            el.J = el.I;
-                                        break;
-                                    case PROCTAB::STATUS::FULL:
-                                        if (prtb->NUMPROC < el.H1)
-                                        {
-                                            el.H2 = el.I;
-                                            el.H1 = prtb->NUMPROC;
-                                        }
-                                        break;
-                                    case PROCTAB::STATUS::RESERVED:
-                                        if (prtb->NUMPROC + 1 < el.H1)  // +1 fixed dde
-                                        {
-                                            el.H2 = el.I;
-                                            el.H1 = prtb->NUMPROC + 1;
-                                        }
-                                        break;
-                                }
-                            } while (!el.B1 && el.I != HIGHESTPROCESSOR);
-                            if (el.B1)
-                            {
-                                il->S[CURPR->T] = el.I;
-                            }
-                            else if (el.J > -1)
-                            {
-                                il->S[CURPR->T] = el.J;
-                                il->USEDPROCS += 1;
-                            }
-                            else
-                                il->S[CURPR->T] = el.H2;
-                            //fprintf(STDOUT, "find processsor %d status %s\n", il->S[CURPR->T],
-                            //        prcsrStatus(il->PROCTAB[il->S[CURPR->T]].STATUS));
-                            il->PROCTAB[il->S[CURPR->T]].STATUS = PROCTAB::STATUS::RESERVED;
+                        //     el.I = -1;
+                        //     el.J = -1;
+                        //     el.B1 = false;
+                        //     el.H1 = MAXINT;
+                        //     el.H2 = -1;  // ?? added DE
+                        //     do
+                        //     {
+                        //         el.I += 1;
+                        //         prtb = &il->PROCTAB[el.I];
+                        //         // with PROCTAB[I]
+                        //         switch (prtb->STATUS)
+                        //         {
+                        //             case PROCTAB::STATUS::EMPTY:
+                        //                 el.B1 = true;
+                        //                 break;
+                        //             case PROCTAB::STATUS::NEVERUSED:
+                        //                 if (el.J == -1)
+                        //                     el.J = el.I;
+                        //                 break;
+                        //             case PROCTAB::STATUS::FULL:
+                        //                 if (prtb->NUMPROC < el.H1)
+                        //                 {
+                        //                     el.H2 = el.I;
+                        //                     el.H1 = prtb->NUMPROC;
+                        //                 }
+                        //                 break;
+                        //             case PROCTAB::STATUS::RESERVED:
+                        //                 if (prtb->NUMPROC + 1 < el.H1)  // +1 fixed dde
+                        //                 {
+                        //                     el.H2 = el.I;
+                        //                     el.H1 = prtb->NUMPROC + 1;
+                        //                 }
+                        //                 break;
+                        //         }
+                        //     } while (!el.B1 && el.I != HIGHESTPROCESSOR);
+                        //     if (el.B1)
+                        //     {
+                        //         il->S[CURPR->T] = el.I;
+                        //     }
+                        //     else if (el.J > -1)
+                        //     {
+                        //         il->S[CURPR->T] = el.J;
+                        //         il->USEDPROCS += 1;
+                        //     }
+                        //     else
+                        //         il->S[CURPR->T] = el.H2;
+                        //     //fprintf(STDOUT, "find processsor %d status %s\n", il->S[CURPR->T],
+                        //     //        prcsrStatus(il->PROCTAB[il->S[CURPR->T]].STATUS));
+                        //     il->PROCTAB[il->S[CURPR->T]].STATUS = PROCTAB::STATUS::RESERVED;
+                            il->S[CURPR->T] = findProcessor(il->PROCTAB, il->USEDPROCS);
                         }
                         break;
                     }
@@ -2573,7 +2765,7 @@ namespace Cstar
                         else
                         {
                             if (debug & DBGTIME)
-                                procTime(CURPR, (float)el.H1, "case 93");
+                                procTime(CURPR, static_cast<float>(el.H1), "case 93");
                             CURPR->TIME += el.H1;
                         }
                         break;
@@ -2680,7 +2872,7 @@ namespace Cstar
                             if (el.IR.F == 98 && il->SLOCATION[el.H2] == -1) {
                                 if (debug & DBGSEND)
                                 {
-                                    fprintf(STDOUT, "send(rel) %d pid % d from %d len %d\n",
+                                    fprintf(STDOUT, "send(rel) %d pid %d from %d len %d\n",
                                             el.IR.F, CURPR->PID, el.H2, el.IR.Y);
                                 }
                                 if (debug & DBGSEND)
@@ -2726,6 +2918,10 @@ namespace Cstar
                         break;
                     }
                     case 104: {
+                        // [T] = group size (GROUPING), also loop increment
+                        // [T-1] = upper forall limit
+                        // [T-2] = value of forall index
+                        // [T-3] = index stack location
                         if (il->S[CURPR->T - 1] < il->S[CURPR->T]) {
                             il->S[CURPR->T - 1] += 1;
                             CURPR->PC = el.IR.X;
@@ -2740,14 +2936,14 @@ namespace Cstar
                         if (il->S[CURPR->B + 5] == 1) {
                             if (debug & DBGRELEASE)
                             {
-                                fprintf(STDOUT, "%d release %d fm=%d ln=%d\n", el.IR.F, CURPR->PID, CURPR->B, il->S[CURPR->B + 6]);
+                                fprintf(STDOUT, "rel op %d pid %d fm=%d ln=%d\n", el.IR.F, CURPR->PID, CURPR->B, il->S[CURPR->B + 6]);
                             }
                             RELEASE(il, CURPR->B, il->S[CURPR->B + 6]);
                         } else {
                             il->S[CURPR->B + 5] = il->S[CURPR->B + 5] - 1;
                             if (debug & DBGRELEASE)
                             {
-                                fprintf(STDOUT, "%d fm ref ct %d ct=%d\n", el.IR.F, CURPR->PID, il->S[CURPR->B + 5]);
+                                fprintf(STDOUT, "dec op %d pid %d ct %d\n", el.IR.F, CURPR->PID, il->S[CURPR->B + 5]);
                             }
                         }
                         el.H1 = TAB[il->S[CURPR->B + 4]].LEV;

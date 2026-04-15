@@ -298,7 +298,7 @@ namespace Cstar
 
     void FACTOR(BasicLocal *bx, SYMSET &FSYS, ITEM &X)
     {
-        int A, I;
+        int A, I, J;
         SYMBOL OP;
         TYPES TYPCAST;
         SYMSET su, sv;
@@ -405,13 +405,13 @@ namespace Cstar
                         TEST(su, sv, 6);
                         if (SY == IDENT)
                         {
-                            int I = LOC(bx->bl, ID);
-                            if (TAB[I].OBJ == VARIABLE)
+                            J = LOC(bx->bl, ID);
+                            if (TAB[J].OBJ == VARIABLE)
                             {
-                                EMIT1(24, TAB[I].SIZE);
-                            } else if (TAB[I].OBJ == TYPE1)
+                                EMIT1(24, TAB[J].SIZE);
+                            } else if (TAB[J].OBJ == TYPE1)
                             {
-                                EMIT1(24, TAB[I].ADR);
+                                EMIT1(24, TAB[J].ADR);
                             } else
                             {
                                 ERROR(6);
@@ -421,13 +421,13 @@ namespace Cstar
                             INSYMBOL();
                             if (SY == IDENT)
                             {
-                                int I = LOC(bx->bl, ID);
-                                if (I != 0)
+                                J = LOC(bx->bl, ID);
+                                if (J != 0)
                                 {
-                                    if (TAB[I].OBJ != STRUCTAG)
+                                    if (TAB[J].OBJ != STRUCTAG)
                                         ERROR(108);
                                     else
-                                        EMIT1(24, TAB[I].ADR);
+                                        EMIT1(24, TAB[J].ADR);
                                 }
                             } else
                             {
@@ -1457,8 +1457,6 @@ void PROCDECLARATION(BlockLocal *bl) {
         ERROR(2);
         strcpy(ID, "              ");
     }
-    if (strcmp(ID, "VECTORADD     ") == 0)
-        fprintf(STDOUT, "%s\n", ID);
     ENTER(bl, ID, PROZEDURE);
     int T0 = Tx;
 
@@ -1472,7 +1470,6 @@ void PROCDECLARATION(BlockLocal *bl) {
 
     TAB[T0].NORMAL = true;
     INSYMBOL();
-
     int LCSAV = LC;
     EMIT(10);
     su = bl->FSYS | STATBEGSYS | ASSIGNBEGSYS | DECLBEGSYS;

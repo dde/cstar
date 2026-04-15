@@ -5,10 +5,10 @@
 namespace Cstar
 {
     extern int FINDFRAME(InterpLocal *il, int LENGTH);
-    PROCESSDESCRIPTOR::PROCESSDESCRIPTOR(PROCPNT parent, Cstar::InterpLocal *il, int processor)
+    PROCESSDESCRIPTOR::PROCESSDESCRIPTOR(PROCPNT parent, Cstar::InterpLocal *il, int proc, int processor)
     {
         int H1, J;
-        PID = processor;
+        PID = proc;
         memcpy(DISPLAY, parent->DISPLAY, sizeof(DISPLAY));
         T = FINDFRAME(il, WORKSIZE) - 1;
         if (T > 0) {
@@ -29,11 +29,11 @@ namespace Cstar
         FORKCOUNT = 1;
         PARENT = parent;
         PROCESSOR = processor;
-        if (il->PROCTAB[processor].STATUS == Cstar::PROCTAB::STATUS::NEVERUSED) {
-            il->USEDPROCS++;
-        }
-        il->PROCTAB[processor].STATUS = Cstar::PROCTAB::STATUS::FULL;
-        il->PROCTAB[processor].NUMPROC++;
+        // if (il->PROCTAB[processor].STATUS == Cstar::PROCTAB::STATUS::NEVERUSED) {
+        //     il->USEDPROCS++;
+        // }
+        // il->PROCTAB[processor].STATUS = Cstar::PROCTAB::STATUS::FULL;
+        // il->PROCTAB[processor].NUMPROC++;
         /*
         J = 1;
         while (DISPLAY[J] != -1) {

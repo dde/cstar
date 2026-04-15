@@ -10,6 +10,8 @@
 #define EXPORT_CS_INTERPRET
 #include "cs_interpret.h"
 #include "cs_PreBuffer.h"
+#undef EXPORT_CS_INTERPRET
+#include "ProcessDescriptor.h"
 
 #define COMMLINKTIME 10
 #define TRU 1
@@ -55,6 +57,7 @@ static bool block_list = false;
 static bool symbol_list = false;
 static bool array_list = false;
 static bool real_list = false;
+static void unreleased(InterpLocal *il);
 
 void showCodeList(bool flg)
 {
@@ -241,7 +244,7 @@ void showRealList(bool flg)
                 {
                     A = il->REF;
                     strcpy(TAB[0].NAME, ID);
-                    while (TAB[A].NAME != ID)
+                    while (strcmp(TAB[A].NAME, ID) != 0)
                     {
                         A = TAB[A].LINK;
                     }
@@ -1287,6 +1290,21 @@ void showRealList(bool flg)
         }
         return I - 1;
     }
+    static void memoryMap(InterpLocal *il)
+    {
+        int loc, id;
+        loc = 0;
+        id = il->STARTMEM[loc];
+        fprintf(STDOUT, "location %d, ID %d\n", loc, id);
+        for (loc = 1; loc <= STMAX; loc += 1)
+        {
+            if (il->STARTMEM[loc] != id)
+            {
+                id = il->STARTMEM[loc];
+                fprintf(STDOUT, "location %d, ID %d\n", loc, id);
+            }
+        }
+    }
     void PRINTSTATS(InterpLocal *il)
     {
         std::cout << std::endl;
@@ -1336,6 +1354,8 @@ void showRealList(bool flg)
                     break;
                 case InterpLocal::PS::REFCHK:
                     std::cout << "POINTER ERROR" << std::endl;
+                    // unreleased(il);
+                    // memoryMap(il);
                     break;
                 case InterpLocal::PS::CASCHK:
                     std::cout << "UNDEFINED CASE" << std::endl;
@@ -1403,6 +1423,7 @@ void showRealList(bool flg)
                 fprintf(STDOUT, "SPEEDUP:  %6.2f\n", il->SPEED);
             }
             fprintf(STDOUT, "NUMBER OF PROCESSORS USED: %d\n", il->USEDPROCS);
+            fprintf(STDOUT, "NUMBER OF PROCESSES CREATED: %d\n", il->NEXTID);
             // il->H1 -= il->USEDPROCS - 1;
             il->H1= 0;
             il->PTEMP = il->ACPHEAD;
@@ -1475,9 +1496,11 @@ void showRealList(bool flg)
         // of the passed LENGTH
         // the BLOCKR chain is managed by this code
         BLKPNT PREV = nullptr, REF = il->STHEAD;
-        int I, STARTLOC;
-        int rtn;
+        int I, STARTLOC = -1;
+        int rtn = -1;
         bool FOUND = false;
+        if (LENGTH == 1)
+            fprintf(STDOUT, "length 1 storage request fron PID %d\n", il->CURPR->PID);
         while (!FOUND && REF != nullptr)
         {
             if (REF->SIZE >= LENGTH)
@@ -1524,15 +1547,23 @@ void showRealList(bool flg)
     }
     void RELEASE(InterpLocal *il, int BASE, int LENGTH)
     {
-        STYPE *smp = il->STARTMEM;
+        STYPE *smp;
+        smp = il->STARTMEM;
+        for (int I = BASE; I < BASE + LENGTH; I++)
+        {
+            if (abs(smp[I]) != BASE)
+                fprintf(STDOUT, "STARTMEM inconsistency at %d length %d val %d\n", BASE, LENGTH, smp[I]);
+        }
         for (int I = BASE; I < BASE + LENGTH; I++)
         {
             smp[I] = 0;
         }
         BLKPNT NEWREF;
-        BLKPNT PREV;
+        BLKPNT PREV = nullptr;
         BLKPNT REF = il->STHEAD;
         bool LOCATED = false;
+        // if (BASE == 0)
+        //     fprintf(STDOUT, "releasing %d length %d\n", BASE, LENGTH);
         while (!LOCATED && REF != nullptr)
         {
             if (BASE <= REF->START)
@@ -1578,7 +1609,7 @@ void showRealList(bool flg)
             }
         }
     }
-    void unreleased(InterpLocal *il)
+    static void unreleased(InterpLocal *il)
     {
         BLKPNT seq;
         fprintf(STDOUT, "rel_fail %d, rel_alloc %d, rel_free %d\n", rel_fail, rel_alloc, rel_free);
@@ -1642,10 +1673,30 @@ void showRealList(bool flg)
             return INUM;
         }
     }
-
+    void INITPROCTAB(InterpLocal *il)
+    {
+        PROCTAB *ptb;
+        il->PROCTAB = (PROCTAB *)calloc(HIGHESTPROCESSOR + 1, sizeof(PROCTAB));
+        ptb = il->PROCTAB;
+        if (il->VARIATION)
+        {
+            for (int I = 0; I <= HIGHESTPROCESSOR; ++I, ++ptb)  // init all PROCTAB elements
+            {
+                ptb->SPEED = (float)(RANDGEN() + 0.001);
+            }
+        }
+        else
+        {
+            for (int I = 0; I <= HIGHESTPROCESSOR; ++I, ++ptb)  // init all PROCTAB elements
+            {
+                ptb->SPEED = 1.0f;;
+            }
+        }
+    }
     void INITIALIZE(InterpLocal *il)
     {   int *ip;
-        PROCTAB *ptb;
+        if (il->PROCTAB == nullptr)
+            INITPROCTAB(il);
         if (il->INITFLAG)
         {
             il->PTEMP = il->ACPHEAD;
@@ -1665,7 +1716,7 @@ void showRealList(bool flg)
             }
             if (TOPOLOGY != SHAREDSY)
             {
-                for (int I = 0; I <= PMAX; I++)
+                for (int I = 0; I <= HIGHESTPROCESSOR; I += 1)
                 {
                     BUSYPNT TCP = il->PROCTAB[I].BUSYLIST;
                     while (TCP != nullptr)
@@ -1725,19 +1776,19 @@ void showRealList(bool flg)
             std::cin >> XR;
             XR = XR + 52379.0;
         }
-        ptb = il->PROCTAB;
-        for (int I = 0; I <= PMAX; ++I, ++ptb)  // init all PROCTAB elements
-        {
-            ptb->STATUS = PROCTAB::STATUS::NEVERUSED;
-            ptb->VIRTIME = 0;
-            ptb->BRKTIME = 0;
-            ptb->PROTIME = 0;
-            ptb->RUNPROC = nullptr;
-            ptb->NUMPROC = 0;
-            ptb->STARTTIME = 0;
-            ptb->BUSYLIST = nullptr;
-            ptb->SPEED = (il->VARIATION) ? (float)(RANDGEN() + 0.001) : 0.0f;
-        }
+        // for (int I = 0; I <= PMAX; ++I, ++ptb)  // init all PROCTAB elements
+        // {
+        //     ptb->STATUS = PROCTAB::STATUS::NEVERUSED;
+        //     ptb->VIRTIME = 0;
+        //     ptb->BRKTIME = 0;
+        //     ptb->PROTIME = 0;
+        //     ptb->RUNPROC = nullptr;
+        //     ptb->NUMPROC = 0;
+        //     ptb->STARTTIME = 0;
+        //     ptb->BUSYLIST = nullptr;
+        //     ptb->SPEED = (il->VARIATION) ? (float)(RANDGEN() + 0.001) : 1.0f;
+        // }
+
         il->PROLINECNT = 0;
         il->CLOCK = 0;
         il->ACPHEAD = (ACTPNT) calloc(1, sizeof(ACTIVEPROCESS));
@@ -1791,11 +1842,11 @@ void showRealList(bool flg)
         }
         if (MPIMODE)
         {
-            il->MPIINIT = (bool *)malloc((PMAX + 1) * sizeof(bool));
-            il->MPIFIN  = (bool *)malloc((PMAX + 1) * sizeof(bool));
-            il->MPIPNT  = (int *) malloc((PMAX + 1) * sizeof(int));
-            il->MPIRES  = (int *) malloc((PMAX + 1) * sizeof(int));
-            for (int I = 0; I <= PMAX; I++)
+            il->MPIINIT = (bool *)malloc( (HIGHESTPROCESSOR + 1) * sizeof(bool));
+            il->MPIFIN  = (bool *)malloc((HIGHESTPROCESSOR + 1) * sizeof(bool));
+            il->MPIPNT  = (int *) malloc((HIGHESTPROCESSOR + 1) * sizeof(int));
+            il->MPIRES  = (int *) malloc((HIGHESTPROCESSOR + 1) * sizeof(int));
+            for (int I = 0; I <= HIGHESTPROCESSOR; I += 1)
             {
                 il->MPIINIT[I] = false;
                 il->MPIFIN[I] = false;
@@ -1861,7 +1912,6 @@ void showRealList(bool flg)
         il->VALUE = (BUFINTTYPE *)calloc(BUFMAX + 1, sizeof(BUFINTTYPE));
         il->RVALUE = (BUFREALTYPE *)calloc(BUFMAX + 1, sizeof(BUFREALTYPE));
         il->DATE = (BUFREALTYPE *)calloc(BUFMAX + 1, sizeof(BUFREALTYPE));
-        il->PROCTAB = (PROCTAB *)malloc((PMAX + 1) * sizeof(PROCTAB));
         INITCOMMANDS();
         // MPIMODE = false;
         do
@@ -1909,7 +1959,7 @@ void showRealList(bool flg)
                     {
                         if (!INPUTOPEN)
                         {
-                            size_t ll = std::strlen(il->INPUTFNAME) - 1;
+                            std::size_t ll = std::strlen(il->INPUTFNAME) - 1;
                             while (ll > 0 && il->INPUTFNAME[ll] == ' ')
                                 ll -= 1;
                             if (ll++ > 0)
@@ -1930,7 +1980,7 @@ void showRealList(bool flg)
                     {
                         if (!OUTPUTOPEN)
                         {
-                            size_t ll = std::strlen(il->INPUTFNAME) - 1;
+                            std::size_t ll = std::strlen(il->INPUTFNAME) - 1;
                             while (ll > 0 && il->INPUTFNAME[ll] == ' ')
                                 ll -= 1;
                             if (ll++ > 0)
@@ -1981,7 +2031,7 @@ void showRealList(bool flg)
                             il->MAXSTEPS = -1;
                             il->OLDSEQTIME = il->SEQTIME;
                             il->OLDTIME = il->CLOCK;
-                            for (I = 0; I <= PMAX; I++) {
+                            for (I = 0; I <= HIGHESTPROCESSOR; I += 1) {
                                 il->PROCTAB[I].BRKTIME = 0;
                                 il->PROCTAB[I].PROTIME = 0;
                             }
@@ -2040,7 +2090,7 @@ void showRealList(bool flg)
                                 il->OLDTIME = il->CLOCK;
                                 il->STEPTIME = il->STEPROC->TIME;
                                 il->VIRSTEPTIME = il->STEPROC->VIRTUALTIME;
-                                for (I = 0; I <= PMAX; I++) {
+                                for (I = 0; I <= HIGHESTPROCESSOR; I += 1) {
                                     il->PROCTAB[I].BRKTIME = 0;
                                     il->PROCTAB[I].PROTIME = 0;
                                 }
@@ -2640,7 +2690,7 @@ void showRealList(bool flg)
                     goto L200;
                 }
                 il->FIRST = 0;
-                il->LAST = PMAX;
+                il->LAST = HIGHESTPROCESSOR + 1;
                 GETRANGE(il->FIRST, il->LAST, il->ERR);
                 if (il->ERR)
                 {
@@ -2654,7 +2704,7 @@ void showRealList(bool flg)
                     std::cout << "PROCESSOR    SINCE START    SINCE LAST BREAK" << std::endl;
                     for (I = il->FIRST; I <= il->LAST; I++)
                     {
-                        if (il->PROCTAB[I].STATUS != PROCTAB::STATUS::NEVERUSED || il->LAST < PMAX)
+                        if (il->PROCTAB[I].STATUS != PROCTAB::STATUS::NEVERUSED || il->LAST <= HIGHESTPROCESSOR)
                         {
                             std::cout << std::setw(6) << I << "    " <<
                             std::setw(9) << std::floor(il->PROCTAB[I].VIRTIME / il->CLOCK * 100) << "     ";
@@ -3164,11 +3214,11 @@ void showRealList(bool flg)
             {
                 std::cout << std::endl;
                 std::cout << "  C* COMPILER AND PARALLEL COMPUTER SIMULATION SYSTEM" << std::endl;
-                std::cout << "                      VERSION 2.2c++" << std::endl;
+                std::cout << "                      VERSION 2.3c++" << std::endl;
                 std::cout << std::endl;
                 std::cout << "The C* programming language was created from the C programming" << std::endl;
                 std::cout << "language by adding a few basic parallel programming primitives." << std::endl;
-                std::cout << "However, in this version 2.2 of the C* compiler, the following" << std::endl;
+                std::cout << "However, in this version 2.3 of the C* compiler, the following" << std::endl;
                 std::cout << "features of standard C are not implemented:" << std::endl;
                 std::cout << std::endl;
                 std::cout << "1. Union Data Types" << std::endl;
@@ -3178,6 +3228,10 @@ void showRealList(bool flg)
                 std::cout << "      bitwise complement, bitwise and, bitwise or" << std::endl;
                 std::cout << "4. Conditional Operator (?)" << std::endl;
                 std::cout << "      Example:  i >= 0 ? i : 0" << std::endl;
+                std::cout << "5. Array/Pointer Duality" << std::endl;
+                std::cout << "      Arrays and pointers are different types and not interchangeable." << std::endl;
+                std::cout << "      For the declaration \"int *ip;\", the expression \"ip[n]\" is not valid." << std::endl;
+                std::cout << "      However, the expression \"*(ip + n)\" is valid." << std::endl;
 //                std::cout << "5. Compound Assignment Operators:" << std::endl;
 //                std::cout << "      +=  -=  *=  /=  %=" << std::endl;
                 std::cout << std::endl;
@@ -3197,5 +3251,13 @@ void showRealList(bool flg)
         free(il->VALUE);
         free(il->RVALUE);
         free(il->DATE);
+        free(il->PROCTAB);
+        if (MPIMODE)
+        {
+            free(il->MPIINIT);
+            free(il->MPIFIN);
+            free(il->MPIPNT);
+            free(il->MPIRES);
+        }
     }
 }

@@ -347,7 +347,8 @@ namespace Cstar
                                 if (C.TP == INTS && C.I >= 0)
                                 {
                                     arch.gpu_size[J] = C.I;
-                                    TOPDIM *= C.I;
+                                    if (J == 2)
+                                        TOPDIM *= C.I;
                                 } else
                                 {
                                     ERROR(43);
@@ -1119,12 +1120,55 @@ namespace Cstar
                 break;
         }
     }
+    static int gpu_kernel(BlockLocal *bl) {
+        int ix, tpx, off;
+        TABREC *tbp;
+        const char *nams[] = {"GRIDDIM       ", "BLOCKIDX      ", "BLOCKDIM      ", "THREADIDX     "};
+        ALFA lclnm;
+        off = 0;
+        for (ix = 0; ix < 4; ix += 1)
+        {
+            strcpy(lclnm, nams[ix]);
+            tpx = LOC(bl, lclnm);  // find the struct type
+            if (tpx <= 0)
+                ERROR(0);
+            ENTER(bl, lclnm, VARIABLE);
+            tbp = &TAB[Tx];  // Tx updated by ENTER()
+            tbp->TYP = RECS;
+            tbp->REF = TAB[tpx].REF;
+            tbp->LEV = bl->LEVEL;
+            tbp->ADR = bl->DX + off;
+            off += TAB[tpx].ADR;
+            tbp->NORMAL = true;
+            tbp->SIZE = TAB[tpx].ADR;
+        }
+        return off;
+    }
+    static int gpu_cudaprms(BlockLocal *bl, int prm) {
+        int off;
+        TABREC *tbp;
+        const char *nams[] = {"CUDABLOCKS    ", "CUDATHREADS   "};
+        ALFA lclnm;
+        off = 0;
+        strcpy(lclnm, nams[prm]);
+        ENTER(bl, lclnm, VARIABLE);
+        tbp = &TAB[Tx];  // Tx updated by ENTER()
+        tbp->TYP = INTS;
+        tbp->ADR = bl->DX + off;
+        tbp->SIZE = 1;
+        off += tbp->SIZE;
+        tbp->NORMAL = true;
+        return off;
+    }
+    void cuda_forall()
+    {
+        //EMIT2(24, 0, 1);  // forall index stack location
+    }
     void CALL(BlockLocal *bl, SYMSET &FSYS, int I)
     {
         ITEM X, Y;
-        int LASTP, CP;
-        // int K;
-        bool DONE;
+        int LASTP, CP, CUSAV = 0;
+        bool DONE, cuda = false;
         SYMSET su, sv;
         if (strcmp(TAB[I].NAME, "MPI_INIT      ") == 0 && !MPIMODE)
             ERROR(146);
@@ -1132,27 +1176,26 @@ namespace Cstar
         su[COMMA] = true;
         su[COLON] = true;
         su[RPARENT] = true;
-        EMIT1(18, I);
+        EMIT1(18, I);  // get stack frame
         LASTP = BTAB[TAB[I].REF].LASTPAR;
         CP = LASTP - BTAB[TAB[I].REF].PARCNT;
         if (SY == CULFTSY)
         {
+            cuda = true;
             INSYMBOL();
-            sv = 0;
             sv[CURGTSY] = true;
+            sv[COMMA] = true;
             while (SY != CURGTSY)
             {
-                if (SY != IDENT && SY != INTCON)
-                {
-                    SKIP(sv, 6);
-                    break;
-                }
-                INSYMBOL();
+                EXPRESSION(bl, sv, X);
                 if (SY == COMMA)
                     INSYMBOL();
             }
             INSYMBOL();
         }
+        // EMIT1(18, I);  // get stack frame
+        // LASTP = BTAB[TAB[I].REF].LASTPAR;
+        // CP = LASTP - BTAB[TAB[I].REF].PARCNT;
         if (SY == LPARENT)
             INSYMBOL();
         else
@@ -1241,44 +1284,26 @@ namespace Cstar
             EMIT1(78, BTAB[TAB[I].REF].PSIZE - BASESIZE);
             bl->CREATEFLAG = false;
         }
+        if (cuda)
+        {
+            EMIT(106);  // seqoff
+            EMIT2(16, 0, I);  // cudainit
+            CUSAV = LC;
+            EMIT(10);
+        }
         EMIT2(19, I, BTAB[TAB[I].REF].PSIZE - 1);
         if (TAB[I].LEV < bl->LEVEL && TAB[I].ADR >= 0)
             EMIT2(3, TAB[I].LEV, bl->LEVEL);
-    }
-    void gpu_kernel(BlockLocal *bl) {
-        int ix, tpx;
-        TABREC *tbp;
-        ALFA lcls[4];
-        strcpy(lcls[0], "GRIDDIM       ");
-        strcpy(lcls[1], "BLOCKIDX      ");
-        strcpy(lcls[2], "BLOCKDIM      ");
-        strcpy(lcls[3], "THREADIDX     ");
-        for (ix = 0; ix < 4; ix += 1)
+        if (cuda)
         {
-            tpx = LOC(bl, lcls[ix]);  // find the struct type
-            if (tpx <= 0)
-                ERROR(0);
-            ENTER(bl, lcls[ix], VARIABLE);
-            tbp = &TAB[Tx];
-            //T0 = Tx + 1;
-            tbp->TYP = RECS;
-            tbp->REF = TAB[tpx].REF;
-            tbp->LEV = bl->LEVEL;
-            tbp->ADR = bl->DX;
-            tbp->NORMAL = true;
-            tbp->SIZE = TAB[tpx].ADR;
-            bl->DX += TAB[tpx].ADR;
-            tbp->PNTPARAM = false;
-            tbp->FREF = 0;
-            tbp->FORLEV = 0;
-            tbp->PNTPARAM = false;
+            EMIT1(78, BTAB[TAB[I].REF].PSIZE - BASESIZE); // wakepar
+            EMIT(70);  // procend --forall
+            CODE[CUSAV].Y = LC;  // jump target
+            EMIT2(19, I, BTAB[TAB[I].REF].PSIZE - 1);
+            if (TAB[I].LEV < bl->LEVEL && TAB[I].ADR >= 0)
+                EMIT2(3, TAB[I].LEV, bl->LEVEL);
+            EMIT(5);   // waitall
         }
-        /*
-        t0 = LOC(bl, "GRIDDIM       ");
-        t0 = LOC(bl, "BLOCKDIM      ");
-        t0 = LOC(bl, "BLOCKIDX      ");
-        t0 = LOC(bl, "THREADIDX     ");
-        */
     }
     void BLOCK(SYMSET FSYS, bool ISFUN, int LEVEL, int PRT)
     {
@@ -1300,8 +1325,6 @@ namespace Cstar
             FATAL(5);
         if (bl.LEVEL > 2)
             ERROR(122);
-        if (arch.max_blk_lev < bl.LEVEL)
-            arch.max_blk_lev = bl.LEVEL;
         bl.NUMWITH = 0;
         bl.MAXNUMWITH = 0;
         bl.UNDEFMSGFLAG = true;
@@ -1327,6 +1350,13 @@ namespace Cstar
             TEST(su, FSYS, 9);
         }
         TAB[PRT].REF = bl.PRB;
+        if (arch.max_blk_lev < bl.LEVEL)
+            arch.max_blk_lev = bl.LEVEL;
+        if (arch.gpu_kernel)
+        {
+            bl.DX += gpu_cudaprms(&bl, 0);
+            bl.DX += gpu_cudaprms(&bl, 1);
+        }
         if (SY == LPARENT && bl.LEVEL > 1)
         {
             PARAMETERLIST(&bl);
@@ -1395,7 +1425,7 @@ namespace Cstar
                 bl.CREATEFLAG = false;
                 if (arch.gpu_kernel)
                 {
-                    gpu_kernel(&bl);
+                    bl.DX += gpu_kernel(&bl);
                     arch.gpu_kernel = false;
                 }
                 while (DECLBEGSYS[SY] || STATBEGSYS[SY] || ASSIGNBEGSYS[SY])
