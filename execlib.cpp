@@ -7,6 +7,7 @@
 #include "cs_compile.h"
 #include "cs_interpret.h"
 #include "cs_exec.h"
+#include "ProcessDescriptor.h"
 namespace Cstar
 {
 #define OPCHMAX 30000                    /*MAXIMUM NUMBER OF OPEN CHANNELS*/
