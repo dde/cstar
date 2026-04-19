@@ -12,7 +12,7 @@ namespace Cstar
     extern void VARIABLEDECLARATION(BlockLocal *);
     extern void CONSTANTDECLARATION(BlockLocal *);
     extern void TYPEDECLARATION(BlockLocal *);
-    extern long LOC(BlockLocal *, ALFA ID);
+    extern int LOC(BlockLocal *, ALFA ID);
     extern void SKIP(SYMSET, int);
     extern void TEST(SYMSET &, SYMSET &, int N);
     extern void CALL(BlockLocal *, SYMSET &, int);

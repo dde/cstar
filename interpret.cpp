@@ -36,7 +36,7 @@ extern void showCodeList(bool flg);
 extern void showConsoleList(bool flg);
 extern void EXECUTE(InterpLocal *il);
 extern void ENTERBLOCK();
-extern bool INCLUDEDIRECTIVE();
+extern void INCLUDEDIRECTIVE();
 extern void BLOCK(SYMSET, bool, int, int);
 extern void NEXTCHAR();
 extern void WRMPIBUF(InterpLocal *, int PNUM);

@@ -3,7 +3,12 @@
 //
 #include <iostream>
 #include <cstdio>
+#ifdef MAC
 #include <unistd.h>
+#else
+#include <io.h>
+#include <process.h>
+#endif
 #define EXPORT_CS_GLOBAL
 #include "cs_global.h"
 #include "cs_errors.h"

@@ -36,7 +36,7 @@ namespace Cstar
     void CONSTANT(BlockLocal *, SYMSET &, CONREC &);
     void ENTERARRAY(TYPES TP, int L, int H);
     extern void ENTER(BlockLocal *bl, ALFA, OBJECTS);
-    int LOC(BlockLocal *, ALFA);
+    extern int LOC(BlockLocal *, ALFA);
     bool TYPE_COMPATIBLE(ITEM, ITEM);
     extern void BLOCK(SYMSET fsys, bool ISFUN, int LEVEL, int PRT);
     void SKIP(SYMSET, int);

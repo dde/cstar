@@ -25,7 +25,7 @@ namespace Cstar
     extern void CONSTANTDECLARATION(BlockLocal *);
     extern void TYPEDECLARATION(BlockLocal *);
     extern void VARIABLEDECLARATION(BlockLocal *);
-    extern bool INCLUDEDIRECTIVE();
+    extern void INCLUDEDIRECTIVE();
     extern void STATEMENT(BlockLocal *, SYMSET &);
     extern void CHANELEMENT(ITEM &);
     extern void ENTERCHANNEL();
