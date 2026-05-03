@@ -1,5 +1,5 @@
 #define cudaHostToDevice 1
-#define cudaDeviceToHost 1
+#define cudaDeviceToHost 2
 #define cudaDeviceToDevice 0
 struct threadIdx
 {
