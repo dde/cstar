@@ -362,6 +362,7 @@ namespace Cstar
                 il->RS[CURPR->T] = atan(il->RS[CURPR->T]);
                 break;
             case 17:  // malloc
+            case 45:  // fmalloc
                 xl.H1 = il->S[CURPR->T];
                 if (xl.H1 <= 0 || xl.H1 >= STMAX) {
                     il->S[CURPR->T] = 0;
@@ -369,27 +370,47 @@ namespace Cstar
                     xl.H2 = FINDFRAME(il, xl.H1);
                     if (xl.H2 > 0) {
                         il->S[CURPR->T] = xl.H2;
-                        for (xl.I = 0; xl.I < xl.H1; xl.I++) {
-                            il->SLOCATION[xl.H2 + xl.I] = CURPR->PROCESSOR;
-                        }
+                        if (lID == 17)
+                            for (xl.I = 0; xl.I < xl.H1; xl.I++) {
+                                il->SLOCATION[xl.H2 + xl.I] = CURPR->PROCESSOR;
+                            }
+                        else
+                            for (xl.I = 0; xl.I < xl.H1; xl.I++) {
+                                xl.J = xl.H2 + xl.I;;
+                                il->SLOCATION[xl.J] = CURPR->PROCESSOR;
+                                il->S[xl.J] = RTAG;
+                            }
                     } else {
                         il->S[CURPR->T] = 0;
                     }
                 }
                 break;
             case 18:  // calloc
-                xl.H1 = il->S[CURPR->T] * il->S[CURPR->T - 1];
-                CURPR->T = CURPR->T - 1;
+            case 46:  // fcalloc
+                xl.H1 = il->S[CURPR->T];
+                if (lID == 18)
+                {
+                    xl.H1 *= il->S[CURPR->T - 1];
+                    CURPR->T = CURPR->T - 1;
+                }
                 if (xl.H1 <= 0 || xl.H1 >= STMAX) {
                     il->S[CURPR->T] = 0;
                 } else {
                     xl.H2 = FINDFRAME(il, xl.H1);
                     if (xl.H2 > 0) {
-                        for (xl.I = 0; xl.I < xl.H1; xl.I++) {
-                            il->SLOCATION[xl.H2 + xl.I] = CURPR->PROCESSOR;
-                            il->S[xl.H2 + xl.I] = 0;
-                            il->RS[xl.H2 + xl.I] = 0.0;
-                        }
+                        if (lID == 18)
+                            for (xl.I = 0; xl.I < xl.H1; xl.I++) {
+                                xl.J = xl.H2 + xl.I;;
+                                il->SLOCATION[xl.J] = CURPR->PROCESSOR;
+                                il->S[xl.J] = 0;
+                            }
+                        else
+                            for (xl.I = 0; xl.I < xl.H1; xl.I++) {
+                                xl.J = xl.H2 + xl.I;;
+                                il->SLOCATION[xl.J] = CURPR->PROCESSOR;
+                                il->S[xl.J] = RTAG;
+                                il->RS[xl.J] = 0.0;
+                            }
                         il->S[CURPR->T] = xl.H2;
                     } else {
                         il->S[CURPR->T] = 0;

@@ -316,6 +316,8 @@ namespace Cstar
         LIBFINIT(58, "DIV           ", 42);
         LIBFINIT(59, "RAND          ", 43);
         LIBFINIT(60, "MEMCPY        ", 44);
+        LIBFINIT(59, "FMALLOC       ", 45);
+        LIBFINIT(60, "FCALLOC       ", 46);
         arch = arch_init;
     }
 }

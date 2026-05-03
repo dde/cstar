@@ -5,6 +5,10 @@
 
     void * calloc(int nmemb, int size);
 
+    float * fmalloc(int size);
+
+    float * fcalloc(int size);
+
     void * realloc(void * ptr, int size);
 
     void free(void * ptr);
