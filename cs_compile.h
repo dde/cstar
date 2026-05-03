@@ -253,10 +253,6 @@ namespace Cstar
         bool arch_set;    // architecture has been set if true
         bool gpu_kernel;  // compiling a GPU kernel if true
     };
-#ifdef EXPORT_CS_COMPILE
-    COMPILE_CS_EXPORT struct arch_global arch = {{0, 0, 0, -0}, 0, false, false};
-#else
     COMPILE_CS_EXPORT struct arch_global arch;
-#endif
 }
 #endif //CSTAR_CS_COMPILE_H

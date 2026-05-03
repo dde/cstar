@@ -55,6 +55,7 @@ namespace Cstar
     }
     void INITCOMPILER()
     {
+        struct arch_global arch_init = {{0, 0, 0, 0}, 0, false, false};
         KSY[0] = DEFINESY;
         KSY[1] = DEFINESY;
         KSY[2] = INCLUDESY;
@@ -266,6 +267,7 @@ namespace Cstar
         ENTER("SEQOFF        ", PROZEDURE, NOTYP, 10);
         ENTER("SEQON         ", PROZEDURE, NOTYP, 11);
         ENTER("              ", PROZEDURE, NOTYP, 0);
+        BTAB.clear();
         BTAB.push_back(BTABREC());
         BTAB.push_back(BTABREC(Tx, 1, 0, 0));
         Bx = BTAB.size() - 1;    // index to BTAB
@@ -333,6 +335,7 @@ namespace Cstar
         LIBFINIT(58, "DIV           ", 42);
         LIBFINIT(59, "RAND          ", 43);
         LIBFINIT(60, "MEMCPY        ", 44);
+        arch = arch_init;
     }
     void PROGRAM()
     {
