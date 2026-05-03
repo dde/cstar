@@ -1411,7 +1411,7 @@ void showRealList(bool flg)
                 default:
                     break;
             }
-            fprintf(STDOUT, "\n");
+            std::cout << std::endl;
         }
         if (!OUTPUTFILE)
         {
@@ -1452,6 +1452,7 @@ void showRealList(bool flg)
                 fprintf(OUTP, "SPEEDUP:  %6.2f\n", il->SPEED);
             }
             fprintf(OUTP, "NUMBER OF PROCESSORS USED: %d\n", il->USEDPROCS);
+            fprintf(OUTP, "NUMBER OF PROCESSES CREATED: %d\n", il->NEXTID);
             il->H1 -= il->USEDPROCS - 1;
             if (il->H1 < 0)
             {
@@ -1695,8 +1696,6 @@ void showRealList(bool flg)
     }
     void INITIALIZE(InterpLocal *il)
     {   int *ip;
-        if (il->PROCTAB == nullptr)
-            INITPROCTAB(il);
         if (il->INITFLAG)
         {
             il->PTEMP = il->ACPHEAD;
@@ -1728,6 +1727,9 @@ void showRealList(bool flg)
                 }
             }
         }
+        if (il->PROCTAB != nullptr)
+            free(il->PROCTAB);
+        INITPROCTAB(il);
         ip = il->LINK;
         for (int I = 1; I <= BUFMAX - 1; I++)
         {
@@ -1923,10 +1925,11 @@ void showRealList(bool flg)
                 //std::cout << std::endl;
                 if (interactive)
                 {
-                    fputc('\n', STDOUT);
+                    //fputc('\n', STDOUT);
                     //fprintf(stdout, '*');
                     //std::cout << "*";
-                    fputc('*', STDOUT);
+                    //fputc('*', STDOUT);
+                    std::cout << "*" << std::flush;
                 }
 //                FREADLINE();
                 Freadline(prebuf);
