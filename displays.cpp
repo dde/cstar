@@ -20,7 +20,7 @@ namespace Cstar
                                        "popjmpfalse",
                                        "",
                                        "getstkfrm1", "pushfm[T]",
-                                       "addint", "cudainit", "",
+                                       "addint", "cudainit", "cudacall",
                                        "getstkfrm2",
                                        "callblk",
                                        "swap", // 20
@@ -246,7 +246,9 @@ namespace Cstar
                 // curExec.functionVarLast = (BTAB[curExec.blockTableIndex].LAST != 0) ?
                 //     BTAB[curExec.blockTableIndex].LAST - 1 : BTAB[curExec.blockTableIndex].LASTPAR;
                 break;
+            case 17:
             case 19:
+
                 snprintf(ibuf, sizeof ibuf, "%4d: %3d %d,%d %s %s\n", ix,
                          F, X, Y, op, (X == 0) ? "" : TAB[X].NAME);
                 break;
@@ -257,8 +259,10 @@ namespace Cstar
                 break;
 
             case 21:
-                snprintf(ibuf, sizeof ibuf, "%4d: %3d %d,%d %s %s\n", ix,
-                         F, X, Y, op, arrayName(Y));
+                // snprintf(ibuf, sizeof ibuf, "%4d: %3d %d,%d %s %s\n", ix,
+                //          F, X, Y, op, arrayName(Y));
+                snprintf(ibuf, sizeof ibuf, "%4d: %3d %d,%d %s\n", ix,
+                         F, X, Y, op);
                 break;
             case 24:
             case 75:

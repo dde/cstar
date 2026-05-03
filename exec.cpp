@@ -493,6 +493,8 @@ namespace Cstar
                     il->CURPR = proc;
                     DONE = true;
                     ptab->STARTTIME = ptab->VIRTIME;
+                    if (ptab->RUNPROC->PID == 0)
+                        fprintf(STDOUT, "slice2 readying pid %d\n", ptab->RUNPROC->PID);
                     ptab->RUNPROC->STATE = PRD::STATE::READY;
                     TIMEINC(il, SWITCHTIME, "slc1");
                     proc->STATE = PRD::STATE::RUNNING;
@@ -887,7 +889,7 @@ namespace Cstar
                         CURPR->SEQON = false;
                         break;
                     }
-                    case 5: {
+                    case 5: {  // waitall
                         if (CURPR->NUMCHILDREN > 0) {
                             CURPR->STATE = PRD::STATE::BLOCKED;
                             il->PROCTAB[CURPR->PROCESSOR].RUNPROC = nullptr;
@@ -1210,16 +1212,13 @@ namespace Cstar
                             il->S[proc->T + 4] = biy;  // blockIdx.y
                             proc->PC = CURPR->PC + 1;  // started processes skip the following jump instruction
                             proc->PRIORITY = PRD::PRIORITY::HIGH;
+                            proc->GROUPREP = true;  // forces wakepar to behave as if a forall group was started
                             if (CURPR->NUMCHILDREN == 0)
                                 CURPR->MAXCHILDTIME = CURPR->TIME;
                             CURPR->NUMCHILDREN += 1;
                             ip = &proc->DISPLAY[1];
                             while (*ip != -1) {
                                 il->S[*ip + 5] += 1;
-                                // if (debug & DBGRELEASE)
-                                // {
-                                //     fprintf(STDOUT, "inc op %d pid %d ct=%d\n", el.IR.F, CURPR->PID, il->S[*ip + 5]);
-                                // }
                                 ++ip;
                             }
                         }
@@ -1253,7 +1252,8 @@ namespace Cstar
                         }
                         break;
                     }
-                    case 19: {
+                    case 17:  // cudacall
+                    case 19: {  // callblk
                         if (TAB[el.IR.X].ADR < 0) {
                             EXECLIB(il, &el, CURPR, -TAB[el.IR.X].ADR);
                         } else {
@@ -1274,12 +1274,14 @@ namespace Cstar
                             // {
                             //     fprintf(STDOUT, "ini op %d pid %d ct=%d\n", el.IR.F, CURPR->PID, il->S[el.H1 + 5]);
                             // }
-                            /*  Clears stack from beginning of locals to end of stack allocation
-                            for (el.H3 = CURPR->T + 1; el.H3 <= el.H4; el.H3++) {
-                                il->S[el.H3] = 0;
-                                il->RS[el.H3] = 0.0;
+                            //  Clears stack from beginning of locals to end of stack allocation
+                            if (el.IR.F != 17)
+                            {
+                                for (el.H3 = CURPR->T + 1; el.H3 <= el.H4; el.H3++) {
+                                    il->S[el.H3] = 0;
+                                    il->RS[el.H3] = 0.0;
+                                }
                             }
-                            */
                             for (el.H3 = el.H1; el.H3 <= el.H4; el.H3++) {
                                 il->SLOCATION[el.H3] = CURPR->PROCESSOR;
                             }
@@ -1652,6 +1654,7 @@ namespace Cstar
                         break;
                     }
                     case 31: { // main  end
+
                         if (CURPR->FORKCOUNT > 1) {
                             CURPR->STATE = PRD::STATE::BLOCKED;
                             CURPR->PC = CURPR->PC - 1;
@@ -2476,10 +2479,10 @@ namespace Cstar
                                     break;
                                 }
                             }
-                            if (debug & DBGPROC)
-                            {
-                                fprintf(STDOUT, "opc %d terminated pid %d\n", el.IR.F, CURPR->PID);
-                            }
+                            // if (debug & DBGPROC)
+                            // {
+                            //     fprintf(STDOUT, "opc %d terminated pid %d\n", el.IR.F, CURPR->PID);
+                            // }
                             CURPR->STATE = PRD::STATE::TERMINATED;
                             prtb = &il->PROCTAB[CURPR->PROCESSOR];
                             prtb->NUMPROC -= 1;

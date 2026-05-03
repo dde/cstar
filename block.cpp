@@ -1160,10 +1160,6 @@ namespace Cstar
         tbp->NORMAL = true;
         return off;
     }
-    void cuda_forall()
-    {
-        //EMIT2(24, 0, 1);  // forall index stack location
-    }
     void CALL(BlockLocal *bl, SYMSET &FSYS, int I)
     {
         ITEM X, Y;
@@ -1290,8 +1286,10 @@ namespace Cstar
             EMIT2(16, 0, I);  // cudainit
             CUSAV = LC;
             EMIT(10);
+            EMIT2(17, I, BTAB[TAB[I].REF].PSIZE - 1);
         }
-        EMIT2(19, I, BTAB[TAB[I].REF].PSIZE - 1);
+        else
+            EMIT2(19, I, BTAB[TAB[I].REF].PSIZE - 1);
         if (TAB[I].LEV < bl->LEVEL && TAB[I].ADR >= 0)
             EMIT2(3, TAB[I].LEV, bl->LEVEL);
         if (cuda)
@@ -1299,7 +1297,7 @@ namespace Cstar
             EMIT1(78, BTAB[TAB[I].REF].PSIZE - BASESIZE); // wakepar
             EMIT(70);  // procend --forall
             CODE[CUSAV].Y = LC;  // jump target
-            EMIT2(19, I, BTAB[TAB[I].REF].PSIZE - 1);
+            EMIT2(17, I, BTAB[TAB[I].REF].PSIZE - 1);
             if (TAB[I].LEV < bl->LEVEL && TAB[I].ADR >= 0)
                 EMIT2(3, TAB[I].LEV, bl->LEVEL);
             EMIT(5);   // waitall
