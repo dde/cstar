@@ -1694,6 +1694,38 @@ void showRealList(bool flg)
             }
         }
     }
+    void FREEPROCTAB(InterpLocal *il)
+    {
+        if (il->PROCTAB != nullptr)
+        {
+            if (TOPOLOGY != SHAREDSY)
+            {
+                for (int I = 0; I <= HIGHESTPROCESSOR; I += 1)
+                {
+                    BUSYPNT TCP = il->PROCTAB[I].BUSYLIST;
+                    while (TCP != nullptr)
+                    {
+                        BUSYPNT SCP = TCP;
+                        TCP = TCP->NEXT;
+                        free(SCP);
+                    }
+                }
+            }
+            free(il->PROCTAB);
+            il->PROCTAB = nullptr;
+        }
+        if (MPIMODE && il->MPIINIT != nullptr)
+        {
+            free(il->MPIINIT);
+            free(il->MPIFIN);
+            free(il->MPIPNT);
+            free(il->MPIRES);
+            il->MPIINIT = nullptr;
+            il->MPIFIN = nullptr;
+            il->MPIPNT = nullptr;
+            il->MPIRES = nullptr;
+        }
+    }
     void INITIALIZE(InterpLocal *il)
     {   int *ip;
         if (il->INITFLAG)
@@ -1713,22 +1745,7 @@ void showRealList(bool flg)
                 TBP = TBP->NEXT;
                 free(SBP);
             }
-            if (TOPOLOGY != SHAREDSY)
-            {
-                for (int I = 0; I <= HIGHESTPROCESSOR; I += 1)
-                {
-                    BUSYPNT TCP = il->PROCTAB[I].BUSYLIST;
-                    while (TCP != nullptr)
-                    {
-                        BUSYPNT SCP = TCP;
-                        TCP = TCP->NEXT;
-                        free(SCP);
-                    }
-                }
-            }
         }
-        if (il->PROCTAB != nullptr)
-            free(il->PROCTAB);
         INITPROCTAB(il);
         ip = il->LINK;
         for (int I = 1; I <= BUFMAX - 1; I++)
@@ -2020,9 +2037,9 @@ void showRealList(bool flg)
                     if (il->PS != InterpLocal::PS::BREAK) {
                         PRINTSTATS(il);
                     }
-                    if (interactive)  // clear any remaining data in STDIN
-                        while (!eoln(STDIN))
-                            fgetc(STDIN);
+                    // if (interactive)  // clear any remaining data in STDIN
+                    //     while (!eoln(STDIN))
+                    //         fgetc(STDIN);
                 }
                 break;
             case CONT:
@@ -3043,6 +3060,7 @@ void showRealList(bool flg)
                     {
                         il->TRCTAB[I].MEMLOC = -1;
                     }
+                    FREEPROCTAB(il);
                     if (OUTPUTOPEN)
                     {
                         fclose(OUTP);
@@ -3254,13 +3272,13 @@ void showRealList(bool flg)
         free(il->VALUE);
         free(il->RVALUE);
         free(il->DATE);
-        free(il->PROCTAB);
-        if (MPIMODE)
-        {
-            free(il->MPIINIT);
-            free(il->MPIFIN);
-            free(il->MPIPNT);
-            free(il->MPIRES);
-        }
+        FREEPROCTAB(il);
+        // if (MPIMODE)
+        // {
+        //     free(il->MPIINIT);
+        //     free(il->MPIFIN);
+        //     free(il->MPIPNT);
+        //     free(il->MPIRES);
+        // }
     }
 }
