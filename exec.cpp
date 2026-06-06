@@ -1161,10 +1161,10 @@ namespace Cstar
                         el.J = CURPR->T - (btb->PSIZE - BASESIZE - 1);  // CUDABLOCKS in stack
                         el.H1 = il->S[el.J];  // CUDABLOCKS
                         el.H2 = el.H1 * il->S[el.J + 1];  // CUDATHREADS
-                        p2 = arch.gpu_size[1];
-                        p1 = arch.gpu_size[0] / p2;
-                        p4 = arch.gpu_size[3];
-                        p3 = arch.gpu_size[2] / p4;
+                        p1 = arch.gpu_size[1];
+                        p2 = arch.gpu_size[0] / p1;
+                        p3 = arch.gpu_size[3];
+                        p4 = arch.gpu_size[2] / p3;
                         // il->S[T + 1] = el.H1;  // GridDim.x
                         // il->S[T + 2] = 1;  // GridDim.y
                         // il->S[T + 3] = 0;  // BlockIdx.x
@@ -1195,15 +1195,14 @@ namespace Cstar
                             if (++tix >= p3)
                             {
                                 tix = 0;
-                                tiy += 1;
-                            }
-                            if (tiy >= p4)
-                            {
-                                tiy = 0;
-                                if (++bix >= p1)
+                                if (++tiy >= p4)
                                 {
-                                    bix = 0;
-                                    biy += 1;
+                                    tiy = 0;
+                                    if (++bix >= p1)
+                                    {
+                                        bix = 0;
+                                        biy += 1;
+                                    }
                                 }
                             }
                             il->S[proc->T + 7] = tix;  // threadIdx.x
