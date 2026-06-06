@@ -5,9 +5,9 @@
 
     void * calloc(int nmemb, int size);
 
-    float * fmalloc(int size);
+    float *fmalloc(int size);
 
-    float * fcalloc(int size);
+    float *fcalloc(int size);
 
     void * realloc(void * ptr, int size);
 
@@ -31,6 +31,7 @@
     int rand(void);
     /* returns pseudo-random number in range 0 to RAND_MAX */
 
+    void *memcpy(void *dst, void *src, int len);
 
 
 

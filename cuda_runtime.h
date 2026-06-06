@@ -21,7 +21,6 @@ struct gridDim
     int x;  /* number of block rows in a grid */
     int y;  /* number of blocks in a grid row */
 };
-void *memcpy(void *dev, void *hst, int len);
 void cudaMalloc(void **mem, int sz)
 {
   void *bytes;
@@ -32,7 +31,7 @@ void cudaFree(void *mem)
 {
   free(mem);
 }
-void cudaMemcpy(void *dev, void *hst, int sz, int dir)
+void cudaMemcpy(void *dst, void *src, int len, int dir)
 {
-    memcpy(dev, hst, sz);
+    memcpy(dst, src, len);
 }
