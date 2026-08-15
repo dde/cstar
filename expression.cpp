@@ -1368,7 +1368,8 @@ void GETLIST(BlockLocal *bl, TYPES TP) {
                 LBCNT = LBCNT + 1;
                 INSYMBOL();
             }
-
+            if (ITPNT > INITMAX)
+                FATAL(8);
             CONREC LISTVAL = {NOTYP, 0l};
             su = 0;
             su[COMMA] = true;

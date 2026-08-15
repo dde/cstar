@@ -43,7 +43,7 @@
 #define PIDMAX 1000000 
 #define WORKSIZE 30 
 #define BASESIZE 8 
-#define INITMAX 500 
+#define INITMAX 1024
 #define FILMAX 50 
 #define LIBMAX 62
 

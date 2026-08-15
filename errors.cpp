@@ -361,7 +361,7 @@ namespace Cstar
                               "IDENTIFIER", "FUNCTIONS ",
                               "STRINGS   ", "ARRAYS    ",
                               "LEVELS    ", "CODE      ",
-                              "STRUCTS   ", "WITHS     ",
+                              "STRUCTS   ", "INIT VALS ",
                               "STREAMS   ", "FLOATS    ",
     };
 
