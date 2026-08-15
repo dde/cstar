@@ -493,8 +493,8 @@ namespace Cstar
                     il->CURPR = proc;
                     DONE = true;
                     ptab->STARTTIME = ptab->VIRTIME;
-                    if (ptab->RUNPROC->PID == 0)
-                        fprintf(STDOUT, "slice2 readying pid %d\n", ptab->RUNPROC->PID);
+//                    if (ptab->RUNPROC->PID == 0)
+//                        fprintf(STDOUT, "slice2 readying pid %d\n", ptab->RUNPROC->PID);
                     ptab->RUNPROC->STATE = PRD::STATE::READY;
                     TIMEINC(il, SWITCHTIME, "slc1");
                     proc->STATE = PRD::STATE::RUNNING;
