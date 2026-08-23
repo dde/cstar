@@ -818,14 +818,14 @@ namespace Cstar
             }
             else
             {
-                // if (debug & DBGINST)
-                // {
+                if (debug & DBGINST)
+                {
 //                    if (CURPR->PROCESSOR == 0 && CURPR->PC < 81 && CURPR->PC > 18)
 //                    {
-                        // fprintf(STDOUT, "proc %3d stk %5d [%5d] ", CURPR->PROCESSOR, CURPR->T, il->S[CURPR->T]);
-                        // dumpInst(CURPR->PC - 1);
+                         fprintf(STDOUT, "proc %3d stk %5d [%5d] ", CURPR->PROCESSOR, CURPR->T, il->S[CURPR->T]);
+                         dumpInst(CURPR->PC - 1);
 //                    }
-                // }
+                }
                 switch (el.IR.F) {
                     case 0:  // push DISPLAY[op1]+op2 (stack frame location of variable op2)
                         CURPR->T++;
