@@ -71,7 +71,8 @@ namespace Cstar
                                        "pushrconfmtbl", "",
                                        "noswitchon",
                                        "noswitchoff",  // 90
-                                       "", "sendri", "",
+                                       "intT2floatT-1",
+                                       "sendri", "",
                                        "tststrm",
                                        "tststrmind",
                                        "tststrmstkind",
