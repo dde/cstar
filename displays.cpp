@@ -19,7 +19,7 @@ namespace Cstar
                                        "jmp", // 10
                                        "popjmpfalse",
                                        "",
-                                       "getstkfrm1", "pushfm[T]",
+                                       "str2stk", "pushfm[T]",
                                        "addint", "cudainit", "cudacall",
                                        "getstkfrm2",
                                        "callblk",
