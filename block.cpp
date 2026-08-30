@@ -1172,7 +1172,8 @@ namespace Cstar
         su[COMMA] = true;
         su[COLON] = true;
         su[RPARENT] = true;
-        EMIT1(18, I);  // get stack frame
+        if (TAB[I].ADR > 0)
+            EMIT1(18, I);  // get stack frame
         LASTP = BTAB[TAB[I].REF].LASTPAR;
         CP = LASTP - BTAB[TAB[I].REF].PARCNT;
         if (SY == CULFTSY)
