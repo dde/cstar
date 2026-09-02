@@ -6,12 +6,12 @@ title = "a Python program for C* (C++) opcode generation comparison"
 typs = ["cp", "cp"]
 vers = ["0", "next"]
 onam = "opcodes"
-prj = "/ClionProjects/cstar"
-which = "/cmake-build-release"
+prj = "/Desktop/CStar Documents/Project Files/cstar"
+which = "/cmake-build-debug"
 rgcmf = "rgc-mpi-files.txt"
 rdiff = f"{onam}-diff.txt"
 if os.name == "nt":
-    usr = "/Users/Dan"
+    usr = "C:/Users/vibha"
     nxpgm = f"{usr}{prj}{which}/cstar.exe"
     pvpgm = f"{usr}/Dropbox/parallel/cstar.exe"
 elif os.name == "posix":
@@ -91,12 +91,19 @@ for ix, fil in enumerate(rgcf_files):
 if not opt["-x"]:
     if os.name == "nt":
         cmd_str = f"fc /L /N {outnx} {outpv} >{rdiff}"
+        cp = run(cmd_str, shell=True, text=True)
+        # Windows fc returns 0 for a match, >0 for differences
+        if cp.returncode == 0:
+            print("no differences")
+        else:
+            print("there are differences")
     else:
         cmd_str = f"diff {outnx} {outpv} >{rdiff}"
-    cp = run(cmd_str, shell=True, text=True)
-    stat_st = os.stat(rdiff)
-    if stat_st.st_size == 0:
-        print("no differences")
-    else:
-        print("there are differences")
+        cp = run(cmd_str, shell=True, text=True)
+        # Mac/Linux diff outputs 0 bytes for a match
+        stat_st = os.stat(rdiff)
+        if stat_st.st_size == 0:
+            print("no differences")
+        else:
+            print("there are differences")
 print("opcode regression complete")
