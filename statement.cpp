@@ -1180,12 +1180,22 @@ namespace Cstar
                         su[OUTSTR] = true;
                         su[SEMICOLON] = true;
                         EXPRESSION(bl, su, X);
-                        if (!(STANTYPS[X.TYP])) {
+
+                        // ... Updated Code ...
+                        if (X.TYP == PNTS && CTAB[X.REF].ELTYP == CHARS)
+                        {
+                            EMIT2(28, 1, 0);
+                        }
+
+                        else if (!(STANTYPS[X.TYP])) {
                             ERROR(40);
                         }
-                        if (X.TYP == REALS)
+                        else if (X.TYP == REALS)
                         {
                             EMIT(37);
+
+                        // ...
+
                         } else
                         {
                             EMIT1(29, (int)X.TYP);
