@@ -6,24 +6,41 @@ title = "a Python program for C* (C++) opcode generation comparison"
 typs = ["cp", "cp"]
 vers = ["0", "next"]
 onam = "opcodes"
-prj = "/Desktop/CStar Documents/Project Files/cstar"
-which = "/cmake-build-debug"
+# prj = "/ClionProjects/cstar"
+# which = "/cmake-build-release"
 rgcmf = "rgc-mpi-files.txt"
 rdiff = f"{onam}-diff.txt"
+
+usr = os.path.expanduser("~")
+
+script_dir = os.path.dirname(os.path.abspath(__file__))
+repo_root = os.path.dirname(script_dir)
+
+build_dir = "cmake-build-release"
+if not os.path.exists(os.path.join(repo_root, build_dir)):
+    if os.path.exists(os.path.join(repo_root, "cmake-build-debug")):
+        build_dir = "cmake-build-debug"
+
 if os.name == "nt":
-    usr = "C:/Users/vibha"
-    nxpgm = f"{usr}{prj}{which}/cstar.exe"
+    nxpgm = os.path.join(repo_root, build_dir, "cstar.exe")
     pvpgm = f"{usr}/Dropbox/parallel/cstar.exe"
+    # usr = "/Users/Dan"
+    # nxpgm = f"{usr}{prj}{which}/cstar.exe"
+    # pvpgm = f"{usr}/Dropbox/parallel/cstar.exe"
 elif os.name == "posix":
-    usr = "/Users/danevans"
-    nxpgm = f"{usr}{prj}{which}/cstar"
-    pvpgm = f"{usr}{prj}/parallel-m1/cstar"
+    nxpgm = os.path.join(repo_root, build_dir, "cstar")
+    pvpgm = f"{usr}/ClionProjects/cstar/parallel-m1/cstar"
+    # usr = "/Users/danevans"
+    # nxpgm = f"{usr}{prj}{which}/cstar"
+    # pvpgm = f"{usr}{prj}/parallel-m1/cstar"
     # pvpgm = "/Users/danevans/Library/CloudStorage/Dropbox/parallel/cstar"
 else:
     print("unknown OS")
     exit(1)
+
 exes = [None, nxpgm]
 opt = get_args()
+
 if opt["-f"] is not None:
     rgcf = opt["-f"]
 else:
@@ -39,12 +56,14 @@ if opt["-v"] is not None:
 if opt["-h"]:
     usage(title, onam, typs, vers, exes)
 summary(onam, typs, vers, exes)
+
 outpv = f"{onam}-{typs[PV]}-{vers[PV]}.txt"
 outnx = f"{onam}-{typs[NX]}-{vers[NX]}.txt"
 lines: list[int] = []
 rd = open(rgcf, "r")
 rgcf_files = rd.readlines()
 rd.close()
+
 for fil in rgcf_files:
     try:
         rd = open(fil[:-1], "r", encoding="utf8")
@@ -73,10 +92,11 @@ if opt["-d"]:
                 print(f"    file {outpv} will be generated from {exes[PV]}")
     print(f"    list of test files is in {rgcf}")
     if opt["-x"]:
-        print("    no comparision will be run")
+        print("    no comparison will be run")
     exit(0)
 wd = open(outnx, "w")
 wd.close()
+
 if not opt["-x"]:
     wd = open(outpv, "r" if exes[PV] is None else "w")
     wd.close()
@@ -88,6 +108,7 @@ for ix, fil in enumerate(rgcf_files):
           run_pgm(exes[PV], cmd_str, outpv)
     except Exception as ex:
         print(str(ex))
+
 if not opt["-x"]:
     if os.name == "nt":
         cmd_str = f"fc /L /N {outnx} {outpv} >{rdiff}"
@@ -106,4 +127,6 @@ if not opt["-x"]:
             print("no differences")
         else:
             print("there are differences")
+
 print("opcode regression complete")
+
