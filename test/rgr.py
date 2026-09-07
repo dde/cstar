@@ -6,26 +6,43 @@ title = "a Python program for C* (C++) regression comparison"
 typs = ("cp", "cp")
 vers = ["0", "next"]
 onam = "regress"
-prj = "/ClionProjects/cstar"
-which = "/cmake-build-release"
+# prj = "/ClionProjects/cstar"
+# which = "/cmake-build-release"
 rgrf = "rgr-files.txt"
 rgrdf = "rgr-dat-files.txt"
 rgrmf = "rgr-mpi-files.txt"
 rdiff = onam + "-diff.txt"
+
+usr = os.path.expanduser("~")
+
+script_dir = os.path.dirname(os.path.abspath(__file__))
+repo_root = os.path.dirname(script_dir)
+
+build_dir = "cmake-build-release"
+if not os.path.exists(os.path.join(repo_root, build_dir)):
+    if os.path.exists(os.path.join(repo_root, "cmake-build-debug")):
+        build_dir = "cmake-build-debug"
+
 if os.name == "nt":
-    usr = "/Users/Dan"
-    nxpgm = f"{usr}{prj}{which}/cstar.exe"
+    nxpgm = os.path.join(repo_root, build_dir, "cstar.exe")
     pvpgm = f"{usr}/Dropbox/parallel/cstar.exe"
+    # usr = "/Users/Dan"
+    # nxpgm = f"{usr}{prj}{which}/cstar.exe"
+    # pvpgm = f"{usr}/Dropbox/parallel/cstar.exe"
 elif os.name == "posix":
-    usr = "/Users/danevans"
-    nxpgm = f"{usr}{prj}{which}/cstar"
-    pvpgm = f"{usr}{prj}/parallel-m1/cstar"
+    nxpgm = os.path.join(repo_root, build_dir, "cstar")
+    pvpgm = f"{usr}/ClionProjects/cstar/parallel-m1/cstar"
+    # usr = "/Users/danevans"
+    # nxpgm = f"{usr}{prj}{which}/cstar"
+    # pvpgm = f"{usr}{prj}/parallel-m1/cstar"
     # pvpgm = "/Users/danevans/Library/CloudStorage/Dropbox/parallel/cstar"
 else:
     print("unknown OS")
     exit(1)
+
 exes = [None, nxpgm]
 opt = get_args()
+
 if opt["-f"] is None:
     rgcf = "rgr-files.txt"
 else:
@@ -41,10 +58,12 @@ if opt["-v"] is not None:
 if opt["-h"]:
     usage(title, onam, typs, vers, exes)
 summary(onam, typs, vers, exes)
+
 outpv = f"{onam}-{typs[PV]}-{vers[PV]}.txt"
 outnx = f"{onam}-{typs[NX]}-{vers[NX]}.txt"
 # outnx = onam + "-" + typs[PV] + vers[PV] + ".txt"
 # outpv = onam + "-" + typs[NX] + vers[NX] + ".txt"
+
 if opt["-d"]:
     try:
         stat_st = os.stat(outnx)
@@ -63,14 +82,16 @@ if opt["-d"]:
                 print(f"    file {outpv} will be generated from {exes[PV]}")
     print(f"    list of test files is in {rgcf}")
     if opt["-x"]:
-        print("    no comparision will be run")
+        print("    no comparison will be run")
     exit(0)
+
 print("regression phase 1")
 wd = open(outnx, "w")
 wd.close()
 if not opt["-x"]:
     wd = open(outpv, "r" if exes[PV] is None else "w")
     wd.close()
+
 rd = open(rgrf, "r")
 rgrf_files = rd.readlines()
 rd.close()
@@ -84,6 +105,7 @@ for fil in rgrf_files:
             run_pgm(exes[PV], cmds, outpv)
     except Exception as ex:
         print(str(ex))
+
 print("regression phase 2")
 rd = open(rgrdf, "r")
 rgrf_files = rd.readlines()
@@ -97,6 +119,7 @@ for fil in rgrf_files:
             run_pgm(exes[PV], cmds, outpv)
     except Exception as ex:
         print(str(ex))
+
 print("regression phase 3")
 rd = open(rgrmf, "r")
 rgrf_files = rd.readlines()
@@ -110,15 +133,24 @@ for fil in rgrf_files:
             run_pgm(exes[PV], cmds, outpv)
     except Exception as ex:
         print(str(ex))
+
 if not opt["-x"]:
     if os.name == "nt":
         cmd_str = f"fc /L /N {outnx} {outpv} >{rdiff}"
+        cp = run(cmd_str, shell=True, text=True)
+        # Windows fc returns 0 for a match, >0 for differences
+        if cp.returncode == 0:
+            print("no differences")
+        else:
+            print("there are differences")
     else:
         cmd_str = f"diff {outnx} {outpv} >{rdiff}"
-    cp = run(cmd_str, shell=True, text=True)
-    stat_st = os.stat(rdiff)
-    if stat_st.st_size == 0:
-        print("no differences")
-    else:
-        print("there are differences")
+        cp = run(cmd_str, shell=True, text=True)
+        # Mac/Linux diff outputs 0 bytes for a match
+        stat_st = os.stat(rdiff)
+        if stat_st.st_size == 0:
+            print("no differences")
+        else:
+            print("there are differences")
+
 print("regression complete")
