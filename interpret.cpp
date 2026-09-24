@@ -13,6 +13,19 @@
 #undef EXPORT_CS_INTERPRET
 #include "ProcessDescriptor.h"
 
+// ... CLI Updates ...
+#include "Interactive.h"
+
+#ifdef _WIN32
+#include <io.h>
+#define IS_TERMINAL _isatty(_fileno(stdin))
+#undef ERROR
+#else
+#include <unistd.h>
+#define IS_TERMINAL isatty(STDIN_FILENO)
+#endif
+// ...
+
 #define COMMLINKTIME 10
 #define TRU 1
 #define FALS 0
@@ -1045,21 +1058,37 @@ void showRealList(bool flg)
     static void FREADLINE()
     {
         LL = 0;
-        while (!eoln(STDIN) && (LL <= LLNG))
-        {
-            //CH = (*INP).get();
-            CH = (char)fgetc(STDIN);
-            if (CH == '\x08')
-            {
-                if (LL > 0)
-                {
-                    LL = LL - 1;
+        // ... New CLI Routing ...
+        if (IS_TERMINAL) {
+            Interactive *iact = Interactive::getInstance();
+            std::string cmd = iact->getCommand();
+            for (char c : cmd) {
+                if (LL < LLNG) {
+                    LL++;
+                    LINE[LL] = c;
                 }
-            } else
-            {
-                LL = LL + 1;
-                LINE[LL] = CH;
             }
+        }
+        // ...
+        else {
+            // ... Legacy Code ...
+            while (!eoln(STDIN) && (LL <= LLNG))
+            {
+                //CH = (*INP).get();
+                CH = (char)fgetc(STDIN);
+                if (CH == '\x08')
+                {
+                    if (LL > 0)
+                    {
+                        LL = LL - 1;
+                    }
+                } else
+                {
+                    LL = LL + 1;
+                    LINE[LL] = CH;
+                }
+            }
+
         }
         //READLN(STDIN);
         if (LL > 0)
