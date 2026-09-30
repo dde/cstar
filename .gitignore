@@ -1,7 +1,0 @@
-*.txt
-
-*.zip
-
-__pycache__/
-
-.idea/
