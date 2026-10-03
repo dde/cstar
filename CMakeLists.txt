@@ -39,9 +39,11 @@ set(COMPILE_FILES compile.cpp
         initcompiler.cpp)
 set(COMPILE_HDRS cs_compile.h)
 
-add_executable(cstar ${SOURCE_FILES} ${HEADERS})
+add_executable(cstar ${SOURCE_FILES} ${HEADERS} Interactive.cpp)
 
 add_executable(cstc ${COMPILE_FILES} ${COMPILE_HDRS})
+
+add_executable(cli_sandbox test/interactive_test.cpp)
 
 #add_executable(cstar main.cpp)
 #        commdelay.cpp
