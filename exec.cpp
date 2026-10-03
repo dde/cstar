@@ -1508,27 +1508,48 @@ namespace Cstar
                         CURPR->T--;
                         break;
                     }
-                    case 28: { // write from string table
-                        el.H1 = il->S[CURPR->T];
-                        el.H2 = el.IR.Y;
-                        CURPR->T--;
-                        il->CHRCNT = il->CHRCNT + el.H1;
-                        if (il->CHRCNT > LINELENG) {
-                            il->PS = InterpLocal::PS::LNGCHK;
+                    case 28: {
+                        if (el.IR.X == 1) {
+                            el.H1 = il->S[CURPR->T]; // Pop the starting memory address
+                            CURPR->T--;
+
+                            while (il->S[el.H1] != 0) {
+                                if (!OUTPUTFILE) {
+                                    std::fputc(il->S[el.H1], STDOUT);
+                                } else {
+                                    std::fputc(il->S[el.H1], OUTP);
+                                }
+                                el.H1++; // Move to the next character in memory
+                                il->CHRCNT++;
+                                if (il->CHRCNT > LINELENG) {
+                                    il->PS = InterpLocal::PS::LNGCHK;
+                                }
+                            }
                         }
-                        do
-                        {
-                            if (!OUTPUTFILE) {
-                                std::fputc(STAB[el.H2], STDOUT);
-                            } else {
-                                std::fputc(STAB[el.H2], OUTP);
+                        else {
+                            // Old Logic ...
+                            // write from string table
+                            el.H1 = il->S[CURPR->T];
+                            el.H2 = el.IR.Y;
+                            CURPR->T--;
+                            il->CHRCNT = il->CHRCNT + el.H1;
+                            if (il->CHRCNT > LINELENG) {
+                                il->PS = InterpLocal::PS::LNGCHK;
                             }
-                            el.H1--;
-                            el.H2++;
-                            if (STAB[el.H2] == (char)10 || STAB[el.H2] == (char)13) {
-                                il->CHRCNT = 0;
-                            }
-                        } while (el.H1 != 0);
+                            do
+                            {
+                                if (!OUTPUTFILE) {
+                                    std::fputc(STAB[el.H2], STDOUT);
+                                } else {
+                                    std::fputc(STAB[el.H2], OUTP);
+                                }
+                                el.H1--;
+                                el.H2++;
+                                if (STAB[el.H2] == (char)10 || STAB[el.H2] == (char)13) {
+                                    il->CHRCNT = 0;
+                                }
+                            } while (el.H1 != 0);
+                        }
                         break;
                     }
                     case 29: {  //  outwidth output formatted with WIDTH
