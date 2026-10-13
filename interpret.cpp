@@ -13,6 +13,19 @@
 #undef EXPORT_CS_INTERPRET
 #include "ProcessDescriptor.h"
 
+// ... CLI Updates ...
+#include "Interactive.h"
+
+#ifdef _WIN32
+#include <io.h>
+#define IS_TERMINAL _isatty(_fileno(stdin))
+#undef ERROR
+#else
+#include <unistd.h>
+#define IS_TERMINAL isatty(STDIN_FILENO)
+#endif
+// ...
+
 #define COMMLINKTIME 10
 #define TRU 1
 #define FALS 0
@@ -181,8 +194,11 @@ void showRealList(bool flg)
             MPI,
             VERSION
     };
-
-    PreBuffer *prebuf;
+    static void Freadline();
+    static void Ireadline();
+    PreBuffer *prebuf = nullptr;
+    Interactive *iact = nullptr;
+    void (*readCommand)() = Freadline;;
     void QUALIFY(InterpLocal *il)
     {
         int J;
@@ -1075,18 +1091,18 @@ void showRealList(bool flg)
         }
     }
 
-    void Freadline(PreBuffer *pbp)
+    static void Ireadline()
     {
-        int ch = 0;
+        std::string cmd = iact->getCommand();
         LL = 0;
-        ch = pbp->getc();
-        while (ch >= 0 && ch != '\n' && ch != '\r')
+        for (char c : cmd)
         {
-            LINE[++LL] = (char)ch;
-            ch = pbp->getc();
+            if (LL < LLNG)
+            {
+                LL++;
+                LINE[LL] = c;
+            }
         }
-        if (ch == '\r')
-            ch = pbp->getc();
         if (LL > 0)
         {
             ENDFLAG = false;
@@ -1098,6 +1114,51 @@ void showRealList(bool flg)
             ENDFLAG = true;
             CH = ' ';
             CC = 0;
+        }
+    }
+    static void Freadline()
+    {
+        int ch = 0;
+        try
+        {
+            LL = 0;
+            ch = prebuf->getc();
+            while (ch >= 0 && ch != '\n' && ch != '\r')
+            {
+                LINE[++LL] = (char)ch;
+                ch = prebuf->getc();
+            }
+            if (ch == '\r')
+                ch = prebuf->getc();
+            if (LL > 0)
+            {
+                ENDFLAG = false;
+                CC = 1;
+                CH = LINE[CC];
+            }
+            else
+            {
+                ENDFLAG = true;
+                CH = ' ';
+                CC = 0;
+            }
+        }
+        catch (const PreBufferState &cmp)
+        {
+            if (cmp.stchg == PreBufferState::COMPLETE)
+            {
+                if (IS_TERMINAL)
+                {
+                    iact = Interactive::getInstance();
+                    readCommand = Ireadline;
+                    readCommand();
+                }
+                else
+                {
+                    readCommand = FREADLINE;
+                    readCommand();
+                }
+            }
         }
     }
     void NEXTCHAR()
@@ -1949,7 +2010,8 @@ void showRealList(bool flg)
                     std::cout << "*" << std::flush;
                 }
 //                FREADLINE();
-                Freadline(prebuf);
+                // Freadline();
+                readCommand();
 //                fprintf(STDOUT, "%s\n", &LINE[1]);
                 if (++cct > 3)
                 {
@@ -2162,6 +2224,8 @@ void showRealList(bool flg)
                 }
                 break;
             case EXIT2:
+                if (iact != nullptr)
+                    delete iact;
                 fprintf(stdout, "TERMINATE C* SYSTEM\n");
                 break;
             case VIEW:

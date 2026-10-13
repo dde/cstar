@@ -14,6 +14,12 @@ namespace Cstar
      * with a set of prefix commands which will be immediately executed before reading from the
      * console starts.  This supports non-interactive compilation and execution.
      */
+    struct PreBufferState
+    {
+        enum STCHG {RUNNING, COMPLETE} stchg = COMPLETE;  // Prebuf is empty == COMPLETE
+        PreBufferState(const PreBufferState::STCHG prm) {stchg = prm;}
+        PreBufferState(const PreBufferState &other) : stchg(other.stchg) {}
+    };
     struct PreBuffer
     {
         FILE *fp;  // file pointer
@@ -31,7 +37,8 @@ namespace Cstar
         int getc()
         {
             if (bh == bl)
-                return fgetc(fp);
+                throw PreBufferState{PreBufferState::COMPLETE};
+            // return fgetc(fp);
             return buffer[bl++];
         }
 
