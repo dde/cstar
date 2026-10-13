@@ -16,6 +16,7 @@ endif()
 set(HEADERS cs_global.h cs_basic.h cs_block.h cs_compile.h cs_defines.h cs_errors.h
         cs_interpret.h cs_exec.h
         cs_PreBuffer.h
+        Interactive.h
         ProcessDescriptor.h)
 set(SOURCE_FILES lexer.cpp
         errors.cpp
@@ -28,6 +29,7 @@ set(SOURCE_FILES lexer.cpp
         execlib.cpp
         displays.cpp
         ProcessDescriptor.cpp
+        Interactive.cpp
         InterpLocal.cpp)
 set(COMPILE_FILES compile.cpp
         block.cpp
@@ -39,12 +41,9 @@ set(COMPILE_FILES compile.cpp
         initcompiler.cpp)
 set(COMPILE_HDRS cs_compile.h)
 
-add_executable(cstar ${SOURCE_FILES} ${HEADERS} Interactive.cpp)
+add_executable(cstar ${SOURCE_FILES} ${HEADERS})
 
 add_executable(cstc ${COMPILE_FILES} ${COMPILE_HDRS})
 
-add_executable(cli_sandbox test/it_main.cpp)
+add_executable(cli_sandbox test/it_main.cpp Interactive.cpp Interactive.h)
 
-#add_executable(cstar main.cpp)
-#        commdelay.cpp
-#        interpret.cpp)
