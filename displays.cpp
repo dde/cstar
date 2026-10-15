@@ -5,6 +5,7 @@
 #include "cs_compile.h"
 #include "cs_interpret.h"
 #include "ProcessDescriptor.h"
+#include <cstring>
 namespace Cstar
 {
     const char *lookupSym(int, int);
