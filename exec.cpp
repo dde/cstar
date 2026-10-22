@@ -1103,6 +1103,7 @@ namespace Cstar
                         } else {
                             for (el.I = 0; el.I < el.H2; el.I++) {
                                 il->S[el.H3 + el.I] = (unsigned char)STAB[el.H1 + el.I];
+                                il->SLOCATION[el.H3 + el.I] = CURPR->PROCESSOR;
                             }
                             il->S[el.H3 + el.H2] = 0;
                             CURPR->T++;

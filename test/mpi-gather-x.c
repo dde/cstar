@@ -28,17 +28,19 @@ void b_func(int rnk, int rcvr, int ttl)
   char sbuf[MSG_LEN + 1];
   char *rbuf;
   float clk;
-  int ix;
-  rbuf = (char *)malloc(msg_len * ttl + 1);
+  int ix, rmp;
+  rbuf = (char *)malloc(MSG_LEN * ttl + 1);
   /*
   strncpy(sbuf, buf + (rnk * MSG_LEN), MSG_LEN); 
   */
   ix = 0;
+  rmp = rnk * MSG_LEN;
   while (ix < MSG_LEN)
   {
-    sbuf[ix] = *(buf + (rnk * MSG_LEN)  + ix);
+    sbuf[ix] = *(buf + rmp  + ix);
     ix += 1;
   }
+  cout << endl;
   sbuf[MSG_LEN] = '\0';
   if (rnk == rcvr)
     cout << "receiver is " << rcvr << endl;
