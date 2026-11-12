@@ -22,7 +22,8 @@
     div_t div(int n, int denom);
     /* divides n by denom - returns quotient and remainder */
 
-    #define RAND_MAX 32765;
+    // #define RAND_MAX 32765;
+    #define RAND_MAX 2147483645
 
     int rand(void);
     /* returns pseudo-random number in range 0 to RAND_MAX */
