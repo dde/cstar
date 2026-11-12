@@ -420,13 +420,13 @@ namespace Cstar
         }
     }
     void LOADVAL(ITEM& X) {
-        if (STANTYPS[X.TYP] || X.TYP == PNTS || X.TYP == LOCKS)
+        if (STANTYPS[X.TYP] || X.TYP == PNTS || X.TYP == LOCKS || X.TYP == CHANS)
         {
             EMIT(34);
         }
-        if (X.TYP == CHANS) {
-            ERROR(143);
-        }
+        // if (X.TYP == CHANS) {
+        //     ERROR(143);
+        // }
         X.ISADDR = false;
     }
     void BASICEXPRESSION(BlockLocal *bl, SYMSET FSYS, ITEM &X) {
@@ -737,11 +737,11 @@ namespace Cstar
             ERROR(114);
             X.TYP = NOTYP;
         }
-        if (X.TYP == CHANS)
-        {
-            ERROR(114);
-            X.TYP = NOTYP;
-        }
+        // if (X.TYP == CHANS)
+        // {
+        //    ERROR(114);
+        //    X.TYP = NOTYP;
+        // }
         EMIT(14);
         Z = X;
         Z.ISADDR = false;
@@ -841,11 +841,11 @@ namespace Cstar
                 ERROR(114);
                 X.TYP = NOTYP;
             }
-            if (X.TYP == CHANS)
-            {
-                ERROR(114);
-                X.TYP = NOTYP;
-            }
+            // if (X.TYP == CHANS)
+            // {
+            //     ERROR(114);
+            //     X.TYP = NOTYP;
+            // }
             INSYMBOL();
             su = FSYS;
             su[BECOMES] = true;
@@ -856,7 +856,7 @@ namespace Cstar
             {
                 if (X.TYP == REALS && Y.TYP == INTS)
                     EMIT1(91, SF);
-                else if (STANTYPS[X.TYP] || X.TYP == PNTS || X.TYP == LOCKS)
+                else if (STANTYPS[X.TYP] || X.TYP == PNTS || X.TYP == LOCKS || X.TYP == CHANS)
                     EMIT1(38, SF);
                 else {
                     if (X.TYP == ARRAYS)
