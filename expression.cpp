@@ -182,7 +182,7 @@ namespace Cstar
                     }
                     break;
                 case ARRAYS:
-                    rtn = ARRAY_COMPATIBLE(V, W);
+                    ARRAY_COMPATIBLE(V, W);
                     break;
                 default:
                     break;
@@ -238,14 +238,6 @@ namespace Cstar
             else
                 return false;
         }
-
-        // -- Stream Fix ---
-        else if (X.TYP == CHANS && Y.TYP == CHANS)
-        {
-            return COMPATIBLE(X, Y);
-        }
-        // --
-
         else if (X.TYP == RECS && Y.TYP == RECS)
         {
             if (X.REF == Y.REF)
@@ -911,28 +903,7 @@ void C_PNTCHANTYP(BlockLocal *bl, TYPES& TP, long& RF, long& SZ) {
             OSZ = SZ;
             DONE = false;
 
-            // --- STREAM FIX ---
-            bool IS_STREAM_LIST = false;
-            if (SY == CHANSY) {
-                IS_STREAM_LIST = true;
-                INSYMBOL(); // Step past the keyword
-            }
-            // ---
-
             do {
-
-                // --- STREAM FIX ---
-                if (IS_STREAM_LIST) {
-                    ENTERCHANNEL();
-                    CTAB[C].ELTYP = OTP;
-                    CTAB[C].ELREF = ORF;
-                    CTAB[C].ELSIZE = OSZ;
-                    SZ = 1;
-                    RF = C;
-                    TP = CHANS;
-                }
-                // ---
-
                 C_PNTCHANTYP(bl, TP, RF, SZ);
                 if (SY != IDENT) {
                     ERROR(2);
@@ -1577,34 +1548,8 @@ void VARIABLEDECLARATION(BlockLocal *bl) {
     FUNCDEC = false;
     if (!(TP == RECS && SY == SEMICOLON) && !PROCDEFN)
     {
-
-        // --- STREAM FIX ---
-        bool IS_STREAM_LIST = false;
-        if (SY == CHANSY) {
-            IS_STREAM_LIST = true;
-            INSYMBOL();
-        }
-        // ---
-
         do
         {
-            // --- STREAM FIX ---
-            if (IS_STREAM_LIST) {
-                ENTERCHANNEL();
-                if (OTP == CHANS) {
-                    CTAB[C].ELTYP = CTAB[ORF].ELTYP;
-                    CTAB[C].ELREF = CTAB[ORF].ELREF;
-                    CTAB[C].ELSIZE = CTAB[ORF].ELSIZE;
-                } else {
-                    CTAB[C].ELTYP = OTP;
-                    CTAB[C].ELREF = ORF;
-                    CTAB[C].ELSIZE = OSZ;
-                }
-                SZ = 1;
-                RF = C;
-                TP = CHANS;
-            }
-            // ---
             C_PNTCHANTYP(bl, TP, RF, SZ);
             if (SY != IDENT)
             {
@@ -1644,8 +1589,7 @@ void VARIABLEDECLARATION(BlockLocal *bl) {
                 }
 
                 T0 = T0 + 1;
-                TAB[T0].TYP = IS_STREAM_LIST ? CHANS : TP;
-                //TAB[T0].TYP = TP;
+                TAB[T0].TYP = TP;
                 TAB[T0].REF = RF;
                 TAB[T0].LEV = bl->LEVEL;
                 TAB[T0].ADR = bl->DX;
